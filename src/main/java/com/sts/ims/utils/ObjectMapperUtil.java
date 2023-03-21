@@ -1,4 +1,4 @@
-package com.sas.utils;
+package com.sts.ims.utils;
 
 import java.util.Collection;
 import java.util.List;

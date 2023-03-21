@@ -1,4 +1,4 @@
-package com.sas.config;
+package com.sts.ims.config;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

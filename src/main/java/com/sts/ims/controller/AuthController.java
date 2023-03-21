@@ -1,10 +1,11 @@
-package com.sas.controller;
+package com.sts.ims.controller;
 
-import com.sas.request.LoginRequest;
-import com.sas.service.AuthService;
-import com.sas.request.RegisterRequest;
-import com.sas.exception.ObjectNotFoundException;
-import com.sas.response.Response;
+import com.sts.ims.request.LoginRequest;
+import com.sts.ims.request.RegisterRequest;
+import com.sts.ims.exception.ObjectNotFoundException;
+import com.sts.ims.response.Response;
+import com.sts.ims.service.serviceImpl.AuthService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;

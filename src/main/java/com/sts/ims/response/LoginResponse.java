@@ -1,4 +1,4 @@
-package com.sas.response;
+package com.sts.ims.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

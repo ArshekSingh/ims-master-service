@@ -1,14 +1,15 @@
-package com.sas.service.impl;
+package com.sts.ims.service.serviceImpl;
 
-import com.sas.constants.Constant;
-import com.sas.entity.Token;
-import com.sas.entity.User;
-import com.sas.repository.TokenRepository;
-import com.sas.repository.UserRepository;
-import com.sas.request.LoginRequest;
-import com.sas.request.RegisterRequest;
-import com.sas.response.LoginResponse;
-import com.sas.dto.Response;
+import com.sts.ims.constant.Constant;
+import com.sts.ims.entity.Token;
+import com.sts.ims.entity.User;
+import com.sts.ims.repository.TokenRepository;
+import com.sts.ims.repository.UserRepository;
+import com.sts.ims.request.LoginRequest;
+import com.sts.ims.request.RegisterRequest;
+import com.sts.ims.response.LoginResponse;
+import com.sts.ims.response.Response;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;

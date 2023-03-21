@@ -1,4 +1,4 @@
-package com.sas.service;
+package com.sts.ims.service;
 
 public class ProductMasterServiceImpl {
 

@@ -1,4 +1,4 @@
-package com.sas.service.impl;
+package com.sts.ims.service.serviceImpl;
 
 import java.security.Key;
 import java.util.Date;
@@ -10,8 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import com.sas.entity.User;
-import com.sas.repository.RoleRepository;
+import com.sts.ims.entity.User;
+import com.sts.ims.repository.RoleRepository;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

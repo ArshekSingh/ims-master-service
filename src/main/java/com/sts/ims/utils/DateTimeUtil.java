@@ -1,4 +1,4 @@
-package com.sas.utils;
+package com.sts.ims.utils;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;

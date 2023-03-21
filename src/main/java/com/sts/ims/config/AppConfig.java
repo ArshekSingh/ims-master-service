@@ -1,7 +1,7 @@
-package com.sas.config;
+package com.sts.ims.config;
 
-import com.sas.intercepter.RequestInterceptor;
-import com.sas.repository.UserRepository;
+import com.sts.ims.intercepter.RequestInterceptor;
+import com.sts.ims.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

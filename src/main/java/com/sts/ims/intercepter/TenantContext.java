@@ -1,4 +1,4 @@
-package com.sas.intercepter;
+package com.sts.ims.intercepter;
 
 public class TenantContext {
     private static final ThreadLocal<String> currentTenant = new InheritableThreadLocal<>();

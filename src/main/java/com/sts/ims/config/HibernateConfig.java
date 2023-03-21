@@ -1,4 +1,4 @@
-package com.sas.config;
+package com.sts.ims.config;
 
 import org.hibernate.MultiTenancyStrategy;
 import org.hibernate.cfg.Environment;
@@ -31,7 +31,7 @@ public class HibernateConfig {
         jpaPropertiesMap.put(Environment.MULTI_TENANT_IDENTIFIER_RESOLVER, currentTenantIdentifierResolverImpl);
         LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
         em.setDataSource(dataSource);
-        em.setPackagesToScan("com.sas.*");
+        em.setPackagesToScan("com.sts.ims.*");
         em.setJpaVendorAdapter(jpaVendorAdapter());
         em.setJpaPropertyMap(jpaPropertiesMap);
         return em;

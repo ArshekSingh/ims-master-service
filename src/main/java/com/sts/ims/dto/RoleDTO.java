@@ -1,4 +1,4 @@
-package com.sas.dto;
+package com.sts.ims.dto;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;

@@ -1,8 +1,9 @@
-package com.sas.service;
+package com.sts.ims.service;
 
-import com.sas.dto.AccessGroupDTO;
-import com.sas.dto.Response;
-import com.sas.dto.UserAccessGroupDTO;
+import com.sts.ims.dto.AccessGroupDTO;
+import com.sts.ims.dto.UserAccessGroupDTO;
+import com.sts.ims.response.Response;
+
 import org.springframework.stereotype.Service;
 
 import javax.validation.Valid;

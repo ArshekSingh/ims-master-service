@@ -1,4 +1,4 @@
-package com.sas.controller;
+package com.sts.ims.controller;
 
 import javax.validation.Valid;
 
@@ -12,10 +12,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.sas.dto.AccessGroupDTO;
-import com.sas.dto.UserAccessGroupDTO;
-import com.sas.response.Response;
-import com.sas.service.AccessGroupService;
+import com.sts.ims.dto.AccessGroupDTO;
+import com.sts.ims.dto.UserAccessGroupDTO;
+import com.sts.ims.response.Response;
+import com.sts.ims.service.AccessGroupService;
 
 @RestController
 public class AccessGroupController {

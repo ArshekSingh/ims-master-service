@@ -1,7 +1,7 @@
-package com.sas.service;
+package com.sts.ims.service;
 
-import com.sas.dto.ProductMasterDto;
-import com.sas.response.Response;
+import com.sts.ims.dto.ProductMasterDto;
+import com.sts.ims.response.Response;
 
 public interface ProductMasterService {
 	

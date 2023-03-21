@@ -1,4 +1,4 @@
-package com.sas.response;
+package com.sts.ims.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -6,9 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.http.HttpStatus;
 
-/**
- * @author Shahzad Hussain
- */
 @Data
 @NoArgsConstructor
 @Builder

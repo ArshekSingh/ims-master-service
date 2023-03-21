@@ -1,4 +1,4 @@
-package com.sas.intercepter;
+package com.sts.ims.intercepter;
 
 import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
 import org.springframework.stereotype.Component;

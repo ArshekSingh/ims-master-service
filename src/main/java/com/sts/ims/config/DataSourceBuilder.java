@@ -1,6 +1,6 @@
-package com.sas.config;
+package com.sts.ims.config;
 
-import com.sas.constants.Constant;
+import com.sts.ims.constant.Constant;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.engine.jdbc.connections.spi.AbstractDataSourceBasedMultiTenantConnectionProviderImpl;

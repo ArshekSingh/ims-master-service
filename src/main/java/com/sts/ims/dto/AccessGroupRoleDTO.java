@@ -1,4 +1,4 @@
-package com.sas.dto;
+package com.sts.ims.dto;
 
 public class AccessGroupRoleDTO {
 

@@ -1,4 +1,4 @@
-package com.sas.request;
+package com.sts.ims.request;
 
 import lombok.*;
 

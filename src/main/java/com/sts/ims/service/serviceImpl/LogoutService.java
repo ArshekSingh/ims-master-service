@@ -1,7 +1,7 @@
-package com.sas.service.impl;
+package com.sts.ims.service.serviceImpl;
 
-import com.sas.entity.Token;
-import com.sas.repository.TokenRepository;
+import com.sts.ims.entity.Token;
+import com.sts.ims.repository.TokenRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
