@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.sts.ims.converter.ProductConvertor;
 import com.sts.ims.dto.ProductMasterDto;
 import com.sts.ims.entity.ProductMaster;
 import com.sts.ims.repository.ProductMasterRepository;
@@ -20,8 +22,6 @@ import com.sts.ims.response.Response;
 import com.sts.ims.service.ProductMasterService;
 import com.sts.ims.utils.DateTimeUtil;
 import com.sts.ims.utils.ObjectMapperUtil;
-
-import convertor.ProductConvertor;
 
 @Service
 public class ProductMasterServiceImpl implements ProductMasterService {
@@ -41,7 +41,7 @@ public class ProductMasterServiceImpl implements ProductMasterService {
 		Pageable pageable = PageRequest.of(dto.getStartIndex(), dto.getEndIndex(), Sort.by("id").descending());
 		Optional<List<ProductMaster>> productMasteLIstOptional = productMasterRepository
 				.findByOrgIdAndProductCode(dto.getOrgId(), dto.getProductCode(), pageable);
-		if (productMasteLIstOptional.isEmpty()) {
+		if (!productMasteLIstOptional.isPresent()) {
 			return Response.builder().status(HttpStatus.BAD_REQUEST).code(HttpStatus.BAD_REQUEST.value())
 					.message(HttpStatus.BAD_REQUEST.name()).build();
 		}
@@ -73,7 +73,7 @@ public class ProductMasterServiceImpl implements ProductMasterService {
 		// TODO Auto-generated method stub
 		Optional<ProductMaster> productMasterOptional = productMasterRepository
 				.findByProductIdAndOrgId(dto.getProductId(), dto.getOrgId());
-		if (productMasterOptional.isEmpty()) {
+		if (!productMasterOptional.isPresent()) {
 			return Response.builder().status(HttpStatus.BAD_REQUEST).code(HttpStatus.BAD_REQUEST.value())
 					.message(HttpStatus.BAD_REQUEST.name()).build();
 		}
@@ -88,7 +88,7 @@ public class ProductMasterServiceImpl implements ProductMasterService {
 		// TODO Auto-generated method stub
 		Optional<ProductMaster> productMasterOptional = productMasterRepository
 				.findByProductIdAndOrgId(productId, 1L);
-		if (productMasterOptional.isEmpty()) {
+		if (!productMasterOptional.isPresent()) {
 			return Response.builder().status(HttpStatus.BAD_REQUEST).code(HttpStatus.BAD_REQUEST.value())
 					.message(HttpStatus.BAD_REQUEST.name()).build();
 		}
@@ -103,7 +103,7 @@ public class ProductMasterServiceImpl implements ProductMasterService {
 		// TODO Auto-generated method stub
 		Optional<ProductMaster> productMasterOptional = productMasterRepository
 				.findByProductIdAndOrgId(productId, 1L);
-		if (productMasterOptional.isEmpty()) {
+		if (!productMasterOptional.isPresent()) {
 			return Response.builder().status(HttpStatus.BAD_REQUEST).code(HttpStatus.BAD_REQUEST.value())
 					.message(HttpStatus.BAD_REQUEST.name()).build();
 		}

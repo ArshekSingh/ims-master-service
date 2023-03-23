@@ -36,12 +36,12 @@ public class ProductMasterController {
         return productMasterService.addProductMaster(dto);
     }
 
-    @PostMapping("products")
+    @PostMapping("/products")
     public Response getProductList(@RequestBody ProductMasterDto dto) throws BadRequestException {
         return productMasterService.getActiveProductDetails(dto);
     }
 
-    @GetMapping(value = "product/{productId}")
+    @GetMapping(value = "/product/{productId}")
     public Response getProductDetailsById(@PathVariable Long productId) throws ObjectNotFoundException {
         return productMasterService.getProductDetailsById(productId);
     }

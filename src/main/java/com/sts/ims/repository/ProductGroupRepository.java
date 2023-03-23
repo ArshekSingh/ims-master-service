@@ -16,6 +16,6 @@ public interface ProductGroupRepository extends JpaRepository<ProductGroup, Long
 	
 	Optional<List<ProductGroup>> findByOrgIdAndGroupCode(Long orgId, String groupCOde,Pageable pageable);
 	
-	Optional<List<ProductGroup>> findByOrgIdAndStatusAndGroupType(Long orgId, String status,String groupType);
+	Optional<List<ProductGroup>> findByOrgIdAndActiveAndGroupType(Long orgId, String status,String groupType);
 
 }

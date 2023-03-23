@@ -1,4 +1,4 @@
-package convertor;
+package com.sts.ims.converter;
 
 import java.io.IOException;
 import java.util.ArrayList;
