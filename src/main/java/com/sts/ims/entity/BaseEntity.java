@@ -16,11 +16,6 @@ public abstract class BaseEntity implements Serializable {
 
 	private static final long serialVersionUID = -6524768694427900653L;
 
-	@Id
-	@Column(name = "ID")
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	private Long id;
-
 	@CreatedBy
 	@Column(name = "CREATED_BY")
 	private String createdBy;
@@ -39,14 +34,6 @@ public abstract class BaseEntity implements Serializable {
 
 	@Column(name = "ACTIVE")
 	private String active;
-
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
 
 	public LocalDateTime getCreatedOn() {
 		return createdOn;
