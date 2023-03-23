@@ -6,6 +6,8 @@ public interface Constant {
     String SUCCESS = "Transaction completed successfully";
     String INVALID_USERNAME_PASSWORD = "Invalid username/password";
     String INVALID_TENANT_IDENTIFIER="INVALID_TENANT_IDENTIFIER";
+    String INVALID_REQUEST="Invalid Request";
+
     String DEFAULT_TENANT="DEFAULT_TENANT";
 
 }

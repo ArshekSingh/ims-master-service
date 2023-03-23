@@ -1,4 +1,4 @@
-package com.sts.ims.utils;
+package com.sas.utils;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;

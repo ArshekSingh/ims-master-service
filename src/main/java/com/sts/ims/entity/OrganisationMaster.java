@@ -1,9 +1,7 @@
 package com.sts.ims.entity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.annotation.processing.Generated;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
@@ -13,6 +11,7 @@ public class OrganisationMaster extends BaseEntity implements Serializable {
     private static final long serialVersionUID = 8429414798376337020L;
 
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "ORG_ID")
     private Long ORG_ID;
 
