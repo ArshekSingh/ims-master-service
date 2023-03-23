@@ -34,7 +34,7 @@ public class ProductGroupServiceImpl implements ProductGroupService , Constant {
 		Pageable pageable = PageRequest.of(dto.getStartIndex(), dto.getEndIndex(), Sort.by("id").descending());
 		Optional<List<ProductGroup>> productMasteLIstOptional = productGroupRepository
 				.findByOrgIdAndGroupCode(dto.getOrgId(), dto.getGroupCode(), pageable);
-		if (productMasteLIstOptional.isEmpty()) {
+		if (!productMasteLIstOptional.isPresent()) {
 			return Response.builder().status(HttpStatus.BAD_REQUEST).code(HttpStatus.BAD_REQUEST.value())
 					.message(HttpStatus.BAD_REQUEST.name()).build();
 		}
@@ -66,7 +66,7 @@ public class ProductGroupServiceImpl implements ProductGroupService , Constant {
 		// TODO Auto-generated method stub
 		Optional<ProductGroup> productMasterOptional = productGroupRepository
 				.findByProductGroupIdAndOrgId(dto.getParentGroupId(), dto.getOrgId());
-		if (productMasterOptional.isEmpty()) {
+		if (!productMasterOptional.isPresent()) {
 			return Response.builder().status(HttpStatus.BAD_REQUEST).code(HttpStatus.BAD_REQUEST.value())
 					.message(HttpStatus.BAD_REQUEST.name()).build();
 		}
@@ -80,7 +80,7 @@ public class ProductGroupServiceImpl implements ProductGroupService , Constant {
 	public Response getProductGroupDetailsById(Long productId) {
 		// TODO Auto-generated method stub
 		Optional<ProductGroup> productMasterOptional = productGroupRepository.findByProductGroupIdAndOrgId(productId, 1L);
-		if (productMasterOptional.isEmpty()) {
+		if (!productMasterOptional.isPresent()) {
 			return Response.builder().status(HttpStatus.BAD_REQUEST).code(HttpStatus.BAD_REQUEST.value())
 					.message(HttpStatus.BAD_REQUEST.name()).build();
 		}
@@ -94,7 +94,7 @@ public class ProductGroupServiceImpl implements ProductGroupService , Constant {
 	public Response softDeleteProductGroup(Long productId) {
 		// TODO Auto-generated method stub
 		Optional<ProductGroup> productMasterOptional = productGroupRepository.findByProductGroupIdAndOrgId(productId, 1L);
-		if (productMasterOptional.isEmpty()) {
+		if (!productMasterOptional.isPresent()) {
 			return Response.builder().status(HttpStatus.BAD_REQUEST).code(HttpStatus.BAD_REQUEST.value())
 					.message(HttpStatus.BAD_REQUEST.name()).build();
 		}
@@ -107,7 +107,7 @@ public class ProductGroupServiceImpl implements ProductGroupService , Constant {
 	@Override
 	public Response getParentGroup() {
 		// TODO Auto-generated method stub
-		Optional<List<ProductGroup>> groupListOptional=productGroupRepository.findByOrgIdAndStatusAndGroupType(1L, ACTIVE_STATUS,PARENT_GROUP_TYPE);
+		Optional<List<ProductGroup>> groupListOptional=productGroupRepository.findByOrgIdAndActiveAndGroupType(1L, ACTIVE_STATUS,PARENT_GROUP_TYPE);
 		List<ProductGroupDto> dtoList = groupListOptional.get().stream().map(this::entityToDto)
 				.collect(Collectors.toList());
 		return Response.builder().status(HttpStatus.OK).data(dtoList).code(HttpStatus.OK.value())

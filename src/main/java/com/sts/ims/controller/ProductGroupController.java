@@ -48,10 +48,10 @@ public class ProductGroupController {
         return productGroupService.updateProductGroup(dto);
     }
     
-    @PutMapping("/delete")
-    public Response softDeleteProduct(@PathVariable Long productId) throws ObjectNotFoundException, BadRequestException {
-        return productGroupService.softDeleteProductGroup(productId);
-    }
+//    @PutMapping("/delete")
+//    public Response softDeleteProduct(@PathVariable Long productId) throws ObjectNotFoundException, BadRequestException {
+//        return productGroupService.softDeleteProductGroup(productId);
+//    }
     
     @GetMapping(value = "/parentGroup")
     public Response getParentGroup(){
