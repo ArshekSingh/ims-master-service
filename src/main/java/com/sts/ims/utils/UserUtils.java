@@ -1,9 +1,8 @@
 package com.sts.ims.utils;
 
+import com.sts.ims.entity.User;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
-
-import com.sts.ims.entity.User;
 
 @Component
 public class UserUtils {

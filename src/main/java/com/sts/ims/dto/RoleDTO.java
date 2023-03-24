@@ -1,9 +1,9 @@
 package com.sts.ims.dto;
 
+import lombok.Data;
+
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-
-import lombok.Data;
 
 @Data
 public class RoleDTO {

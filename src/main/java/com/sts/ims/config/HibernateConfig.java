@@ -31,7 +31,7 @@ public class HibernateConfig {
         jpaPropertiesMap.put(Environment.MULTI_TENANT_IDENTIFIER_RESOLVER, currentTenantIdentifierResolverImpl);
         LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
         em.setDataSource(dataSource);
-        em.setPackagesToScan("com.sts.ims.*");
+        em.setPackagesToScan("com.sts.*");
         em.setJpaVendorAdapter(jpaVendorAdapter());
         em.setJpaPropertyMap(jpaPropertiesMap);
         return em;

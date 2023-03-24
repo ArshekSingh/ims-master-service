@@ -1,13 +1,12 @@
 package com.sts.ims.repository;
 
-import java.util.Optional;
-import java.util.Set;
-
+import com.sts.ims.entity.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import com.sts.ims.entity.Role;
+import java.util.Optional;
+import java.util.Set;
 
 @Repository("roleRepository")
 public interface RoleRepository extends JpaRepository<Role, Integer> {
