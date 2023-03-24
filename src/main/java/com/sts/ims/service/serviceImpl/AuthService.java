@@ -9,7 +9,6 @@ import com.sts.ims.request.LoginRequest;
 import com.sts.ims.request.RegisterRequest;
 import com.sts.ims.response.LoginResponse;
 import com.sts.ims.response.Response;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -57,7 +56,7 @@ public class AuthService implements Constant {
     public Response login(LoginRequest request) {
         if (isValidUser(request)) {
             Optional<User> optionalUser = userRepository.findByEmail(request.getEmail());
-            if (!optionalUser.isPresent()) {
+            if (optionalUser.isEmpty()) {
                 return new Response(NOT_FOUND, HttpStatus.NOT_FOUND);
             }
             User user = optionalUser.get();

@@ -1,13 +1,12 @@
 package com.sts.ims.dto;
 
-import java.util.HashSet;
-import java.util.Set;
+import lombok.Data;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-
-import lombok.Data;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 public class UserAccessGroupDTO {

@@ -1,10 +1,7 @@
 package com.sts.ims.exception;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.sts.ims.response.Response;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -17,82 +14,81 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-import com.sts.ims.response.Response;
+import java.util.ArrayList;
+import java.util.List;
 
+@Slf4j
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-	private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+    private static final String ERROR_MSG = "Something went Wrong, Please try Later";
 
-	private static final String ERROR_MSG = "Something went Wrong, Please try Later";
+    @ExceptionHandler(value = Exception.class)
+    @ResponseBody
+    public ResponseEntity<Object> handleException(Exception ex) {
+        log.error("Exception  occurs => {}", ex.toString());
+        return new ResponseEntity<>(new Response(ERROR_MSG, HttpStatus.INTERNAL_SERVER_ERROR),
+                HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 
-	@ExceptionHandler(value = Exception.class)
-	@ResponseBody
-	public ResponseEntity<Object> handleException(Exception ex) {
-		logger.error("Exception  occurs => {}", ex.toString());
-		return new ResponseEntity<>(new Response(ERROR_MSG, HttpStatus.INTERNAL_SERVER_ERROR),
-				HttpStatus.INTERNAL_SERVER_ERROR);
-	}
+    @ExceptionHandler(value = BadRequestException.class)
+    @ResponseBody
+    public ResponseEntity<Object> handleBadRequestException(BadRequestException ex) {
+        log.error("BadRequestException occurs => {}", ex.toString());
+        return new ResponseEntity<>(new Response(ex.getMessage(), ex.getResponseObject(), ex.getHttpStatus()),
+                HttpStatus.OK);
+    }
 
-	@ExceptionHandler(value = BadRequestException.class)
-	@ResponseBody
-	public ResponseEntity<Object> handleBadRequestException(BadRequestException ex) {
-		logger.error("BadRequestException occurs => {}", ex.toString());
-		return new ResponseEntity<>(new Response(ex.getMessage(), ex.getResponseObject(), ex.getHttpStatus()),
-				HttpStatus.OK);
-	}
+    @ExceptionHandler(value = ObjectNotFoundException.class)
+    @ResponseBody
+    public ResponseEntity<Object> handleObjectNotFoundException(ObjectNotFoundException ex) {
+        log.error("ObjectNotFoundException occurs => {}", ex.toString());
+        return new ResponseEntity<>(new Response(ex.getMessage(), ex.getResponseObject(), ex.getHttpStatus()),
+                HttpStatus.OK);
+    }
 
-	@ExceptionHandler(value = ObjectNotFoundException.class)
-	@ResponseBody
-	public ResponseEntity<Object> handleObjectNotFoundException(ObjectNotFoundException ex) {
-		logger.error("ObjectNotFoundException occurs => {}", ex.toString());
-		return new ResponseEntity<>(new Response(ex.getMessage(), ex.getResponseObject(), ex.getHttpStatus()),
-				HttpStatus.OK);
-	}
+    @ExceptionHandler(value = HttpRequestMethodNotSupportedException.class)
+    @ResponseBody
+    public ResponseEntity<Object> handleException(HttpRequestMethodNotSupportedException ex) {
+        log.error("HttpRequestMethodNotSupportedException occurs => {}", ex.toString());
+        return new ResponseEntity<>(new Response(ex.getMessage(), HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
+    }
 
-	@ExceptionHandler(value = HttpRequestMethodNotSupportedException.class)
-	@ResponseBody
-	public ResponseEntity<Object> handleException(HttpRequestMethodNotSupportedException ex) {
-		logger.error("HttpRequestMethodNotSupportedException occurs => {}", ex.toString());
-		return new ResponseEntity<>(new Response(ex.getMessage(), HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
-	}
+    @ExceptionHandler(value = MethodArgumentNotValidException.class)
+    @ResponseBody
+    public ResponseEntity<Object> handleException(MethodArgumentNotValidException ex) {
+        log.error("MethodArgumentNotValidException occurred ", ex);
+        final List<String> errors = new ArrayList<>();
+        for (final FieldError error : ex.getBindingResult().getFieldErrors()) {
+            errors.add(error.getField() + ": " + error.getDefaultMessage());
+        }
+        return new ResponseEntity<>(
+                new Response("Please pass all mandatory attributes", errors, HttpStatus.BAD_REQUEST),
+                HttpStatus.BAD_REQUEST);
+    }
 
-	@ExceptionHandler(value = MethodArgumentNotValidException.class)
-	@ResponseBody
-	public ResponseEntity<Object> handleException(MethodArgumentNotValidException ex) {
-		logger.error("MethodArgumentNotValidException occurred ", ex);
-		final List<String> errors = new ArrayList<>();
-		for (final FieldError error : ex.getBindingResult().getFieldErrors()) {
-			errors.add(error.getField() + ": " + error.getDefaultMessage());
-		}
-		return new ResponseEntity<>(
-				new Response("Please pass all mandatory attributes", errors, HttpStatus.BAD_REQUEST),
-				HttpStatus.BAD_REQUEST);
-	}
+    @ExceptionHandler(value = HttpMessageNotReadableException.class)
+    @ResponseBody
+    public ResponseEntity<Object> handleException(HttpMessageNotReadableException ex) {
+        log.error("HttpMessageNotReadableException occurred ", ex);
+        return new ResponseEntity<>(new Response("Invalid request body", HttpStatus.BAD_REQUEST),
+                HttpStatus.BAD_REQUEST);
+    }
 
-	@ExceptionHandler(value = HttpMessageNotReadableException.class)
-	@ResponseBody
-	public ResponseEntity<Object> handleException(HttpMessageNotReadableException ex) {
-		logger.error("HttpMessageNotReadableException occurred ", ex);
-		return new ResponseEntity<>(new Response("Invalid request body", HttpStatus.BAD_REQUEST),
-				HttpStatus.BAD_REQUEST);
-	}
+    @ExceptionHandler(value = MethodArgumentTypeMismatchException.class)
+    @ResponseBody
+    public ResponseEntity<Object> handleException(MethodArgumentTypeMismatchException ex) {
+        log.error("MethodArgumentTypeMismatchException occurred ", ex);
+        return new ResponseEntity<>(new Response("Invalid params/attributes passed ", HttpStatus.BAD_REQUEST),
+                HttpStatus.BAD_REQUEST);
+    }
 
-	@ExceptionHandler(value = MethodArgumentTypeMismatchException.class)
-	@ResponseBody
-	public ResponseEntity<Object> handleException(MethodArgumentTypeMismatchException ex) {
-		logger.error("MethodArgumentTypeMismatchException occurred ", ex);
-		return new ResponseEntity<>(new Response("Invalid params/attributes passed ", HttpStatus.BAD_REQUEST),
-				HttpStatus.BAD_REQUEST);
-	}
-	@ExceptionHandler(value = AccessDeniedException.class)
-	@ResponseBody
-	public ResponseEntity<Object> handleException(AccessDeniedException ex) {
-		logger.error("AccessDeniedException occurred ", ex);
-		return new ResponseEntity<>(new Response("Access Denied", HttpStatus.UNAUTHORIZED),
-				HttpStatus.UNAUTHORIZED);
-	}
-	
-	
+    @ExceptionHandler(value = AccessDeniedException.class)
+    @ResponseBody
+    public ResponseEntity<Object> handleException(AccessDeniedException ex) {
+        log.error("AccessDeniedException occurred ", ex);
+        return new ResponseEntity<>(new Response("Access Denied", HttpStatus.FORBIDDEN), HttpStatus.FORBIDDEN);
+    }
+
 
 }

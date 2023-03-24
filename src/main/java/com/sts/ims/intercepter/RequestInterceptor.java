@@ -2,7 +2,6 @@ package com.sts.ims.intercepter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sts.ims.response.Response;
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;

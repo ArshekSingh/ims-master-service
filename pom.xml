@@ -71,7 +71,7 @@
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
-			<scope>runtime</scope>
+<!--			<scope>runtime</scope>-->
 			<version>42.2.16</version>
 		</dependency>
 		<dependency>
@@ -102,7 +102,12 @@
             <artifactId>poi</artifactId>
             <version>5.1.0</version>
         </dependency>
-    </dependencies>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-envers</artifactId>
+			<version>5.5.3.Final</version>
+		</dependency>
+	</dependencies>
 
     <build>
         <plugins>

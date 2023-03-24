@@ -34,7 +34,7 @@ public class DistrictMaster extends BaseEntity implements Serializable {
     @Column(name = "STATE_ID")
     private Integer stateId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "STATE_ID", referencedColumnName = "STATE_ID", insertable = false, updatable = false)
-    private StateMaster stateMaster;
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "STATE_ID", referencedColumnName = "STATE_ID", insertable = false, updatable = false)
+//    private StateMaster stateMaster;
 }

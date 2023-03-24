@@ -21,17 +21,17 @@ public class BranchMaster extends BaseEntity implements Serializable {
     @Column(name = "BRANCH_ID")
     private Long BRANCH_ID;
 
-    @Column(name = "BRANCH_TYPE")
-    private String BRANCH_TYPE;
-
-    @Column(name = "PARENT_ID")
-    private Integer PARENT_ID;
-
     @Column(name = "BRANCH_CODE")
     private String BRANCH_CODE;
 
     @Column(name = "BRANCH_NAME")
     private String BRANCH_NAME;
+
+    @Column(name = "BRANCH_TYPE")
+    private String BRANCH_TYPE;
+
+    @Column(name = "PARENT_ID")
+    private Long PARENT_ID;
 
     @Column(name = "BRANCH_OPENING_DATE")
     private LocalDateTime BRANCH_OPENING_DATE;
@@ -42,17 +42,8 @@ public class BranchMaster extends BaseEntity implements Serializable {
     @Column(name = "STATUS")
     private String STATUS;
 
-    @Column(name = "ADDRESS_1")
-    private String ADDRESS_1;
-
-    @Column(name = "ADDRESS_2")
-    private String ADDRESS_2;
-
-    @Column(name = "STATE_ID")
-    private Integer STATE_ID;
-
-    @Column(name = "CITY")
-    private String CITY;
+    @Column(name = "ADDRESS", nullable = false)
+    private String ADDRESS;
 
     @Column(name = "PINCODE")
     private Integer PINCODE;
@@ -65,4 +56,12 @@ public class BranchMaster extends BaseEntity implements Serializable {
 
     @Column(name = "PARTNER_REFFERENCE_CODE")
     private String PARTNER_REFFERENCE_CODE;
+
+    @Column(name = "BRANCH_MANAGER_ID")
+    private String BRANCH_MANAGER_ID;
+
+    //COMMA SEPERATED
+    @Column(name = "APPROVAL_AUTHORITY", nullable = false)
+    private String APPROVAL_AUTHORITY;
+
 }

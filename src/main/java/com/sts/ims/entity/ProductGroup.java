@@ -40,4 +40,7 @@ public class ProductGroup extends BaseEntity {
 	@Column(name="GROUP_TYPE")
 	private String groupType;
 
+	@Column(name="ACTIVE")
+	private String active;
+
 }

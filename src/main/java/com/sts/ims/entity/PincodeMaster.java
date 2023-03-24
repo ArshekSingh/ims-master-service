@@ -17,13 +17,13 @@ public class PincodeMaster extends BaseEntity implements Serializable {
     @EmbeddedId
     private PincodeMasterPK pincodeMasterPK;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "STATE_ID", referencedColumnName = "STATE_ID", insertable = false, updatable = false)
-    private StateMaster stateMaster;
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "STATE_ID", referencedColumnName = "STATE_ID", insertable = false, updatable = false)
+//    private StateMaster stateMaster;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "DISTRICT_ID", referencedColumnName = "DISTRICT_ID", insertable = false, updatable = false)
-    private DistrictMaster districtMaster;
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "DISTRICT_ID", referencedColumnName = "DISTRICT_ID", insertable = false, updatable = false)
+//    private DistrictMaster districtMaster;
 
     @Column(name = "DISTRICT_ID")
     private Integer districtId;
