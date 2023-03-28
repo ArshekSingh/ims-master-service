@@ -38,7 +38,7 @@ public class ProductMasterServiceImpl implements ProductMasterService {
 	@Override
 	public Response getActiveProductDetails(ProductMasterDto dto) {
 		// TODO Auto-generated method stub
-		Pageable pageable = PageRequest.of(dto.getStartIndex(), dto.getEndIndex(), Sort.by("id").descending());
+		Pageable pageable = PageRequest.of(dto.getStartIndex(), dto.getEndIndex(), Sort.by("productId").descending());
 		Optional<List<ProductMaster>> productMasteLIstOptional = productMasterRepository
 				.findByOrgIdAndProductCode(dto.getOrgId(), dto.getProductCode(), pageable);
 		if (!productMasteLIstOptional.isPresent()) {
@@ -107,7 +107,7 @@ public class ProductMasterServiceImpl implements ProductMasterService {
 			return Response.builder().status(HttpStatus.BAD_REQUEST).code(HttpStatus.BAD_REQUEST.value())
 					.message(HttpStatus.BAD_REQUEST.name()).build();
 		}
-		productMasterOptional.get().setActive("N");
+		productMasterOptional.get().setStatus("N");
 		productMasterRepository.save(productMasterOptional.get());
 		return Response.builder().status(HttpStatus.OK).code(HttpStatus.OK.value())
 				.message(HttpStatus.OK.name()).build();
@@ -127,7 +127,6 @@ public class ProductMasterServiceImpl implements ProductMasterService {
 		entity.setProductName(dto.getProductName());
 		entity.setProductCode(dto.getProductCode());
 		entity.setAmount(dto.getAmount());
-		entity.setCreatedOn(LocalDateTime.now());
 		entity.setOrgId(dto.getOrgId());
 		entity.setPartnerRefferenceCode(dto.getPartnerRefferenceCode());
 		if(StringUtils.hasText(dto.getProductClosingDate()))
@@ -138,7 +137,6 @@ public class ProductMasterServiceImpl implements ProductMasterService {
 		entity.setProductOpeningDate(DateTimeUtil.stringToDateTime(dto.getProductOpeningDate(),DateTimeUtil.D_MMM_YYYY));
 		entity.setQuantity(dto.getQuantity());
 		entity.setStatus(dto.getStatus());
-		entity.setVendorId(dto.getVendorId());
 		productMasterRepository.save(entity);
 		}catch (Exception e) {
 			// TODO: handle exception
