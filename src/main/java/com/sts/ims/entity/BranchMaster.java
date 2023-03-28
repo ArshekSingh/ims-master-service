@@ -32,6 +32,12 @@ public class BranchMaster extends BaseEntity implements Serializable {
     @Column(name = "BRANCH_NAME")
     private String branchName;
 
+    @Column(name = "BRANCH_TYPE")
+    private String BRANCH_TYPE;
+
+    @Column(name = "PARENT_ID")
+    private Long PARENT_ID;
+
     @Column(name = "BRANCH_OPENING_DATE")
     private LocalDateTime branchOpeningDate;
 
@@ -41,6 +47,8 @@ public class BranchMaster extends BaseEntity implements Serializable {
     @Column(name = "STATUS")
     private String status;
 
+    @Column(name = "ADDRESS", nullable = false)
+    private String ADDRESS;
     @Column(name = "ADDRESS_1")
     private String address1;
 
@@ -63,6 +71,15 @@ public class BranchMaster extends BaseEntity implements Serializable {
     private String emailId;
 
     @Column(name = "PARTNER_REFFERENCE_CODE")
+    private String PARTNER_REFFERENCE_CODE;
+
+    @Column(name = "BRANCH_MANAGER_ID")
+    private String BRANCH_MANAGER_ID;
+
+    //COMMA SEPERATED
+    @Column(name = "APPROVAL_AUTHORITY", nullable = false)
+    private String APPROVAL_AUTHORITY;
+
     private String partnerReffrenceCode;
-    
+
 }

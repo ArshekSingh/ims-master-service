@@ -17,11 +17,13 @@ public class ProductMasterDto extends BaseDto{
 	private BigDecimal amount;
 	private BigDecimal quantity;
 	private String status;
-	private Long vendorId;
 	private String partnerRefferenceCode;
 	private String productIdentifierCode;
 	private String productOpeningDate;
 	private String productClosingDate;
+	private int startIndex;
+	private int endIndex;
+	private Boolean isProccesble;
 	
 	
 	

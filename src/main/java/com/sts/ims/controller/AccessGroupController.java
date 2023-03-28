@@ -1,21 +1,15 @@
 package com.sts.ims.controller;
 
-import javax.validation.Valid;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.sts.ims.dto.AccessGroupDTO;
 import com.sts.ims.dto.UserAccessGroupDTO;
 import com.sts.ims.response.Response;
 import com.sts.ims.service.AccessGroupService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 
 @RestController
 public class AccessGroupController {
@@ -26,7 +20,7 @@ public class AccessGroupController {
 	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 	@GetMapping("/access_group/{pageNo}/{pageSize}")
 	public Response accessGroups(@PathVariable(value = "pageNo") Integer pageNo,
-			@PathVariable(value = "pageSize") Integer pageSize) {
+								 @PathVariable(value = "pageSize") Integer pageSize) {
 		if (pageSize > 0)
 			return accessGroupService.findAll(pageNo, pageSize);
 		else

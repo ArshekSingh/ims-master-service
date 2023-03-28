@@ -1,43 +1,43 @@
 package com.sts.ims.entity;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import javax.persistence.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
-@Data
+@Getter
+@Setter
 @Builder
+@Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
 @Table(name = "USER_DETAIL")
 public class User implements UserDetails {
 
     @Id
     @GeneratedValue
+    @Column(name = "ID")
     private Long id;
+
+    @Column(name = "FIRSTNAME")
     private String firstname;
+
+    @Column(name = "LASTNAME")
     private String lastname;
+
+    @Column(name = "EMAIL")
     private String email;
+
+    @Column(name = "PASSWORD")
     private String password;
+
+    @Column(name = "ORGID")
+    private Long orgId;
 
     @OneToMany(mappedBy = "user")
     private List<Token> tokens;

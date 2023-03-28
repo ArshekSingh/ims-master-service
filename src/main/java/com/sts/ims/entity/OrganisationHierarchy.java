@@ -4,6 +4,7 @@ import lombok.Data;
 
 import javax.persistence.*;
 import java.io.Serializable;
+
 @Entity
 @Table(name = "ORG_HIERARCHY")
 @Data
@@ -18,13 +19,16 @@ public class OrganisationHierarchy extends BaseEntity implements Serializable {
 
     @Column(name = "ORG_ID")
     private Long orgId;
+
     @Column(name = "HIER_CODE")
     private String hierarchyCode;
+
     @Column(name = "HIER_NAME")
     private String hierarchyName;
 
     @Column(name = "HIER_TYPE")
     private String hierarchyType;
+
     @Column(name = "HIER_SEQUENCE")
     private Long hierarchySequence;
 
@@ -32,3 +36,16 @@ public class OrganisationHierarchy extends BaseEntity implements Serializable {
     private boolean status;
 
 }
+}
+
+
+
+
+
+
+
+
+
+
+
+

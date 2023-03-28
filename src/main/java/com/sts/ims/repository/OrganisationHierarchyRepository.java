@@ -11,6 +11,5 @@ import java.util.Optional;
 public interface OrganisationHierarchyRepository  extends JpaRepository<OrganisationHierarchy,Long> {
 
 
-
     Optional<List<OrganisationHierarchy>> findByOrgIdAndHierarchyTypeOrderByHierarchySequenceAsc(Long valueOf, String geo);
 }
