@@ -1,5 +1,7 @@
 package com.sts.ims.dto;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -46,6 +48,6 @@ public class VendorDto {
     private String rcmFlag;
     private String vendorCreditLimit;
     private String approvalAuthority;
-    private LocalDateTime vendorOpeningDate;
-    private LocalDateTime vendorClosingDate;
+    private String vendorOpeningDate;
+    private String vendorClosingDate;
 }

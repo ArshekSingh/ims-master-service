@@ -9,6 +9,7 @@ import com.sts.ims.repository.OrganisationHierarchyRepository;
 import com.sts.ims.repository.VendorMasterRepository;
 import com.sts.ims.response.Response;
 import com.sts.ims.service.VendorService;
+import com.sts.ims.utils.DateTimeUtil;
 import com.sts.ims.utils.UserUtils;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -123,8 +124,8 @@ public class VendorServiceImpl implements VendorService {
         vendorDto.setVendorStatus(vendorMaster.getVendorStatus());
         vendorDto.setDocumentPath(vendorMaster.getDocumentPath());
         vendorDto.setRcmFlag(vendorMaster.getRcmFlag());
-        vendorDto.setVendorOpeningDate(vendorMaster.getVendorOpeningDate());
-        vendorDto.setVendorClosingDate(vendorMaster.getVendorClosingDate());
+        vendorDto.setVendorOpeningDate(DateTimeUtil.dateTimeToString(vendorMaster.getVendorOpeningDate(), DateTimeUtil.DDMMYYYY));
+        vendorDto.setVendorClosingDate(DateTimeUtil.dateTimeToString(vendorMaster.getVendorClosingDate(), DateTimeUtil.DDMMYYYY));
         return vendorDto;
     }
 
@@ -132,6 +133,7 @@ public class VendorServiceImpl implements VendorService {
         VendorMaster vendorMaster = new VendorMaster();
         vendorMaster.setOrgId(vendorDto.getOrgId());
         vendorMaster.setVendorName(vendorDto.getVendorName());
+        vendorMaster.setVendorCode(vendorDto.getVendorCode());
         vendorMaster.setVendorGroup(vendorDto.getVendorGroup());
         vendorMaster.setVendorType(vendorDto.getVendorType());
         vendorMaster.setAddress1(vendorDto.getAddress1());
@@ -162,8 +164,8 @@ public class VendorServiceImpl implements VendorService {
         vendorMaster.setVendorStatus(vendorDto.getVendorStatus());
         vendorMaster.setDocumentPath(vendorDto.getDocumentPath());
         vendorMaster.setRcmFlag(vendorDto.getRcmFlag());
-        vendorMaster.setVendorOpeningDate(vendorDto.getVendorOpeningDate());
-        vendorMaster.setVendorClosingDate(vendorDto.getVendorClosingDate());
+        vendorMaster.setVendorOpeningDate(DateTimeUtil.stringTimeToDateTime(vendorDto.getVendorOpeningDate(), DateTimeUtil.DDMMYYYY));
+        vendorMaster.setVendorClosingDate(DateTimeUtil.stringToDateTime(vendorDto.getVendorClosingDate(), DateTimeUtil.DDMMYYYY));
         return vendorMaster;
     }
 }
