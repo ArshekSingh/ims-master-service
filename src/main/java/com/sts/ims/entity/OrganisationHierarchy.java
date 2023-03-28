@@ -36,7 +36,6 @@ public class OrganisationHierarchy extends BaseEntity implements Serializable {
     private boolean status;
 
 }
-}
 
 
 
