@@ -9,7 +9,6 @@ import com.sts.ims.repository.OrganisationHierarchyRepository;
 import com.sts.ims.repository.VendorMasterRepository;
 import com.sts.ims.response.Response;
 import com.sts.ims.service.VendorService;
-import com.sts.ims.utils.UserUtils;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -28,7 +27,7 @@ public class VendorServiceImpl implements VendorService {
     private final ApprovalDetailRepository approvalDetailRepository;
 
     @Autowired
-    UserUtils userUtils;
+    com.sas.utils.UserUtils userUtils;
 
     @Override
     public Response getVendorById(Long vendorId) {

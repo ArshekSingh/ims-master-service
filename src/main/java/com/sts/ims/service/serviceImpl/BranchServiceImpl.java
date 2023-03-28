@@ -42,12 +42,13 @@ public class BranchServiceImpl implements BranchService, Constant {
     private OrganisationHierarchyRepository hierarchyRepository;
 
     @Override
-    public Response getBranchDetail(Integer branchId) {
-        Optional<BranchMaster> branchMaster = branchMasterRepository.findByBranchIdAndOrgId(branchId, userSession.getOrganizationId()).orElseThrow(() -> new ObjectNotFoundException("Invalid Branch Id.", HttpStatus.NOT_FOUND));
+    public Response getBranchDetail(Long branchId) throws ObjectNotFoundException {
+//        userSession.getOrganizationId()
+        BranchMaster branchMaster = branchMasterRepository.findByBranchIdAndOrgId(branchId, Long.valueOf("1")).orElseThrow(() -> new ObjectNotFoundException("Invalid Branch Id.", HttpStatus.NOT_FOUND));
         BranchMasterDto branchMasterDto = new BranchMasterDto();
-        ObjectMapperUtil.map(branchMaster.get(), branchMasterDto);
-        branchMasterDto.setCreatedOn(DateTimeUtil.dateTimeToString(branchMaster.get().getCreatedOn()));
-        branchMasterDto.setModifiedOn(DateTimeUtil.dateTimeToString(branchMaster.get().getModifiedOn()));
+        ObjectMapperUtil.map(branchMaster, branchMasterDto);
+        branchMasterDto.setCreatedOn(DateTimeUtil.dateTimeToString(branchMaster.getInsertedOn()));
+        branchMasterDto.setModifiedOn(DateTimeUtil.dateTimeToString(branchMaster.getUpdatedOn()));
         return new Response(SUCCESS, branchMasterDto, HttpStatus.OK);
     }
 
@@ -60,8 +61,8 @@ public class BranchServiceImpl implements BranchService, Constant {
             for (BranchMaster branchMaster : branchMasterList) {
                 BranchMasterDto branchMasterDto = new BranchMasterDto();
                 ObjectMapperUtil.map(branchMaster, branchMasterDto);
-                branchMasterDto.setCreatedOn(DateTimeUtil.dateTimeToString(branchMaster.getCreatedOn()));
-                branchMasterDto.setModifiedOn(DateTimeUtil.dateTimeToString(branchMaster.getModifiedOn()));
+                branchMasterDto.setCreatedOn(DateTimeUtil.dateTimeToString(branchMaster.getInsertedOn()));
+                branchMasterDto.setModifiedOn(DateTimeUtil.dateTimeToString(branchMaster.getUpdatedOn()));
                 branchMasterDtos.add(branchMasterDto);
             }
         } else {
@@ -103,9 +104,9 @@ public class BranchServiceImpl implements BranchService, Constant {
         } else {
             BranchMaster branch = new BranchMaster();
             ObjectMapperUtil.map(branchMasterDto, branch);
-            branch.setCreatedBy("");
+            branch.setInsertedBy("");
             branchMasterDto.setParentId(getParentId(branchMasterDto, parentId, organisationHierarchyList));
-            branch.setCreatedOn(LocalDateTime.now());
+            branch.setInsertedOn(LocalDateTime.now());
             branch = branchMasterRepository.save(branch);
             response.setCode(HttpStatus.OK.value());
             response.setStatus(HttpStatus.OK);
@@ -137,9 +138,9 @@ public class BranchServiceImpl implements BranchService, Constant {
 
 
     @Override
-    public Response updateBranch(BranchMasterDto branchMasterDto) {
-
-        BranchMaster branchMaster = branchMasterRepository.findByBranchIdAndOrgId(branchMasterDto.getBranchId(), userSession.getOrganizationId()).orElseThrow(() -> new ObjectNotFoundException("Branch does not exist.", HttpStatus.NOT_FOUND));
+    public Response updateBranch(BranchMasterDto branchMasterDto) throws ObjectNotFoundException {
+//        userSession.getOrganizationId()
+        BranchMaster branchMaster = branchMasterRepository.findByBranchIdAndOrgId(branchMasterDto.getBranchId(), Long.valueOf("1")).orElseThrow(() -> new ObjectNotFoundException("Branch does not exist.", HttpStatus.NOT_FOUND));
 //        branchMasterDto.mapDtoToEntityForBranchUpdate(branchMasterDto, branchMaster, userSession);
         branchMasterRepository.save(branchMaster);
         return new Response("Branch updated successfully", HttpStatus.OK);

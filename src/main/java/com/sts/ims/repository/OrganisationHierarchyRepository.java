@@ -12,4 +12,6 @@ public interface OrganisationHierarchyRepository  extends JpaRepository<Organisa
 
 
     Optional<List<OrganisationHierarchy>> findByOrgIdAndHierarchyTypeOrderByHierarchySequenceAsc(Long valueOf, String geo);
+
+    List<OrganisationHierarchy> findByOrgIdAndHierarchyCodeAndHierarchyTypeAndStatus(Long orgId, String vendor, String geo, boolean b);
 }

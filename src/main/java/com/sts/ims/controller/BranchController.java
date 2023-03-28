@@ -19,7 +19,7 @@ public class BranchController {
 
 
     @GetMapping(value = "/{branchId}")
-    public Response getBranchDetail(@PathVariable Integer branchId) throws ObjectNotFoundException {
+    public Response getBranchDetail(@PathVariable Long branchId) throws ObjectNotFoundException {
         return branchService.getBranchDetail(branchId);
     }
 
@@ -29,7 +29,7 @@ public class BranchController {
     }
 
     @PostMapping("/addBranch")
-    public Response addBranch(@RequestBody BranchMasterDto branchMasterDto) throws ObjectNotFoundException {
+    public Response addBranch(@RequestBody BranchMasterDto branchMasterDto) throws ObjectNotFoundException, BadRequestException {
         return branchService.addBranch(branchMasterDto);
     }
 

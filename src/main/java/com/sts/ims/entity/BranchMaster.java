@@ -32,12 +32,6 @@ public class BranchMaster extends BaseEntity implements Serializable {
     @Column(name = "BRANCH_NAME")
     private String branchName;
 
-    @Column(name = "BRANCH_TYPE")
-    private String BRANCH_TYPE;
-
-    @Column(name = "PARENT_ID")
-    private Long PARENT_ID;
-
     @Column(name = "BRANCH_OPENING_DATE")
     private LocalDateTime branchOpeningDate;
 
