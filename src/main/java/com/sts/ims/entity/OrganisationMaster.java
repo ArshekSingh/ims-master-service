@@ -13,95 +13,95 @@ public class OrganisationMaster extends BaseEntity implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "ORG_ID")
-    private Long ORG_ID;
+    private Long orgId;
 
     @Column(name = "ORG_CODE")
-    private String ORG_CODE;
+    private String orgCode;
 
     @Column(name = "ORG_NAME")
-    private String ORG_NAME;
+    private String orgName;
 
     @Column(name = "HO_ADDRESS_1")
-    private String HO_ADDRESS_1;
+    private String hoAddress1;
 
     @Column(name = "HO_ADDRESS_2")
-    private String HO_ADDRESS_2;
+    private String hoAddress2;
 
     @Column(name = "HO_ADDRESS_3")
-    private String HO_ADDRESS_3;
+    private String hoAddress3;
 
     @Column(name = "HO_PINCODE")
-    private Integer HO_PINCODE;
+    private Integer hoPinCode;
 
     @Column(name = "HO_STATE_ID")
-    private String HO_STATE_ID;
+    private String hoStateId;
 
     @Column(name = "HO_COUNTRY")
-    private String HO_COUNTRY;
+    private String hoCountry;
 
     @Column(name = "REG_ADDRESS_1")
-    private String REG_ADDRESS_1;
+    private String regAddress1;
 
     @Column(name = "REG_ADDRESS_2")
-    private String REG_ADDRESS_2;
+    private String regAddress2;
 
     @Column(name = "REG_ADDRESS_3")
-    private String REG_ADDRESS_3;
+    private String regAddress3;
 
     @Column(name = "REG_PINCODE")
-    private Integer REG_PINCODE;
+    private Integer regPincode;
 
     @Column(name = "REG_STATE_ID")
-    private String REG_STATE_ID;
+    private String regStateId;
 
     @Column(name = "LANDLINE_1")
-    private String LANDLINE_1;
+    private String landline1;
 
     @Column(name = "LANDLINE_2")
-    private String LANDLINE_2;
+    private String landline2;
 
     @Column(name = "MOBILE_1")
-    private String MOBILE_1;
+    private String mobile1;
 
     @Column(name = "MOBILE_2")
-    private String MOBILE_2;
+    private String mobile2;
 
     @Column(name = "FAX")
-    private String FAX;
+    private String fax;
 
     @Column(name = "EMAIL")
-    private String EMAIL;
+    private String email;
 
     @Column(name = "WEBSITE")
-    private String WEBSITE;
+    private String website;
 
     @Column(name = "STATUS")
-    private String STATUS;
+    private String status;
 
     @Column(name = "CURRENCY_CODE")
-    private String CURRENCY_CODE;
+    private String currencyCode;
 
     @Column(name = "PAN_NUMBER")
-    private String PAN_NUMBER;
+    private String panNUmber;
 
     @Column(name = "VAT_NUMBER")
-    private String VAT_NUMBER;
+    private String vatNumber;
 
     @Column(name = "GST_NUMBER")
-    private String GST_NUMBER;
+    private String gstNumber;
 
     @Column(name = "TAX_REG_NUMBER")
-    private String TAX_REG_NUMBER;
+    private String taxRegNumber;
 
     @Column(name = "TERMS_CODE")
-    private String TERMS_CODE;
+    private String termsCode;
 
     @Column(name = "LOGO_PATH")
-    private String LOGO_PATH;
+    private String logoPath;
 
     @Column(name = "APP_LOGOUT_TIME")
-    private LocalDateTime APP_LOGOUT_TIME;
+    private LocalDateTime appLogoutTime;
 
     @Column(name = "APP_LOGIN_TIME")
-    private LocalDateTime APP_LOGIN_TIME;
+    private LocalDateTime appLoginTime;
 }

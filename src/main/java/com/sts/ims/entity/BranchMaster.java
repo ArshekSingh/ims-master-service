@@ -71,15 +71,13 @@ public class BranchMaster extends BaseEntity implements Serializable {
     private String emailId;
 
     @Column(name = "PARTNER_REFFERENCE_CODE")
-    private String PARTNER_REFFERENCE_CODE;
+    private String partnerRefferenceCode;
 
     @Column(name = "BRANCH_MANAGER_ID")
-    private String BRANCH_MANAGER_ID;
+    private String branchManagerId;
 
     //COMMA SEPERATED
     @Column(name = "APPROVAL_AUTHORITY", nullable = false)
-    private String APPROVAL_AUTHORITY;
-
-    private String partnerReffrenceCode;
+    private String approvalAuthority;
 
 }
