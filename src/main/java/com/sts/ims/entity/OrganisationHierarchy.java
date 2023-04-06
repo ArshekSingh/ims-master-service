@@ -11,6 +11,7 @@ import java.io.Serializable;
 public class OrganisationHierarchy extends BaseEntity implements Serializable {
     private static final long serialVersionUID = 8429414798376337020L;
 
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "Id")
@@ -33,6 +34,7 @@ public class OrganisationHierarchy extends BaseEntity implements Serializable {
 
     @Column(name = "STATUS")
     private boolean status;
+
 }
 
 

@@ -9,6 +9,8 @@ public interface Constant {
     String AUTHENTICATION_FAILED = "Authentication Failed";
     String INVALID_TENANT_IDENTIFIER = "Invalid tenant identifier";
     String INVALID_USERNAME_PASSWORD = "Invalid username/password";
+    String INVALID_REQUEST="Invalid Request";
+
     String ACTIVE_STATUS="A";
     String IN_ACTIVE_STATUS="X";
     String PARENT_GROUP_TYPE="P";

@@ -1,4 +1,4 @@
-package com.sts.ims.utils;
+package com.sas.utils;
 
 import com.sts.ims.entity.User;
 import org.springframework.security.core.context.SecurityContextHolder;
