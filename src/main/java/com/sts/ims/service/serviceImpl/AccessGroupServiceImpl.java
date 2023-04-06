@@ -12,7 +12,6 @@ import com.sts.ims.repository.RoleRepository;
 import com.sts.ims.repository.UserRepository;
 import com.sts.ims.response.Response;
 import com.sts.ims.service.AccessGroupService;
-import com.sts.ims.utils.UserUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -37,7 +36,7 @@ public class AccessGroupServiceImpl implements AccessGroupService {
 	AccessGroupRepository accessGroupRepository;
 
 	@Autowired
-	UserUtils userUtils;
+	com.sas.utils.UserUtils userUtils;
 
 	@Autowired
 	RoleRepository roleRepository;
