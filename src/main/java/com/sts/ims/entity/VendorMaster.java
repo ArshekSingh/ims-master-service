@@ -94,7 +94,7 @@ public class VendorMaster extends BaseEntity implements Serializable {
     @Column(name = "GSTIN")
     private String gstin;
 
-    @Column(name = "STATE_ID", nullable = false)
+    @Column(name = "STATE_ID")
     private String stateId;
 
     @Column(name = "GSTR_TYPE")
@@ -123,9 +123,6 @@ public class VendorMaster extends BaseEntity implements Serializable {
 
     @Column(name = "VENDOR_CREDIT_LIMIT")
     private String vendorCreditLimit;
-
-    @Column(name = "APPROVAL_AUTHORITY")
-    private String approvalAuthority;
 
     @Column(name = "VENDOR_OPENING_DATE")
     private LocalDateTime vendorOpeningDate;
