@@ -31,4 +31,6 @@ public class ApprovalDetail extends BaseEntity implements Serializable {
 
     @Column(name = "APPROVAL_STATUS")
     private String approvalStatus;
+
+
 }

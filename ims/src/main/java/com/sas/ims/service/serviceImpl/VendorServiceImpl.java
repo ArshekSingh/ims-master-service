@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -43,6 +44,9 @@ public class VendorServiceImpl implements VendorService {
 
     @Override
     public Response getVendorList(Integer page, Integer size) {
+        if (page == null || size == null) {
+            return new Response("Invalid Request", HttpStatus.BAD_REQUEST);
+        }
         UserSession userSession = userCredentialService.getUserSession();
         List<VendorMaster> vendors = vendorMasterRepository.findByOrgId(userSession.getCompany().getCompanyId(), PageRequest.of(page, size)).getContent();
         List<VendorDto> vendorDtoList = vendors.stream().map(this::vendorMasterToDto).collect(Collectors.toList());
@@ -51,24 +55,32 @@ public class VendorServiceImpl implements VendorService {
 
     @Override
     public Response saveVendor(VendorDto vendorDto) {
+        if (!StringUtils.hasText(vendorDto.getVendorName()) ||
+                !StringUtils.hasText(String.valueOf(vendorDto.getOrgId())) ||
+                !StringUtils.hasText(vendorDto.getVendorCode()) ||
+                !StringUtils.hasText(vendorDto.getAddress1()) ||
+                !StringUtils.hasText(String.valueOf(vendorDto.getPincode())) ||
+                !StringUtils.hasText(vendorDto.getStateId())) {
+            return new Response("Invalid Request!", HttpStatus.BAD_REQUEST);
+        }
         UserSession userSession = userCredentialService.getUserSession();
 
         //Create vendor master from request
-        VendorMaster vendorMaster = vendorDtoToMaster(vendorDto);
+        VendorMaster vendorMaster = vendorDtoToMaster(vendorDto, "I");
 
         //Fetch approval matrix from Organisation Hierarchy
-        List<OrganisationHierarchy> organisationHierarchyList = organisationHierarchyRepository.findByOrgIdAndHierarchyCodeAndHierarchyTypeAndStatus(userSession.getCompany().getCompanyId(), "VENDOR", "GEO", true);
-        if (!organisationHierarchyList.isEmpty()) {
-            organisationHierarchyList.forEach(organisationHierarchy -> {
-                ApprovalDetail approvalDetail = new ApprovalDetail();
-                approvalDetail.setOrgId(userSession.getCompany().getCompanyId());
-                approvalDetail.setEntityId(organisationHierarchy.getId());
-                approvalDetail.setEntityType(organisationHierarchy.getHierarchyType());
-                approvalDetail.setApprovalType("VENDOR");
-                approvalDetail.setApprovalStatus("I");
-                approvalDetailRepository.save(approvalDetail);
-            });
-        }
+//        List<OrganisationHierarchy> organisationHierarchyList = organisationHierarchyRepository.findByOrgIdAndHierarchyCodeAndHierarchyTypeAndStatus(userSession.getCompany().getCompanyId(), "VENDOR", "GEO", true);
+//        if (!organisationHierarchyList.isEmpty()) {
+//            organisationHierarchyList.forEach(organisationHierarchy -> {
+//                ApprovalDetail approvalDetail = new ApprovalDetail();
+//                approvalDetail.setOrgId(userSession.getCompany().getCompanyId());
+//                approvalDetail.setEntityId(organisationHierarchy.getId());
+//                approvalDetail.setEntityType(organisationHierarchy.getHierarchyType());
+//                approvalDetail.setApprovalType("VENDOR");
+//                approvalDetail.setApprovalStatus("I");
+//                approvalDetailRepository.save(approvalDetail);
+//            });
+//        }
         vendorMasterRepository.save(vendorMaster);
         return new Response("Transaction Successful", HttpStatus.OK);
     }
@@ -80,7 +92,7 @@ public class VendorServiceImpl implements VendorService {
         try {
             Optional<VendorMaster> vendorMaster = vendorMasterRepository.findById(vendorDto.getVendorId());
             if (vendorMaster.isPresent()) {
-                VendorMaster master = vendorDtoToMaster(vendorDto);
+                VendorMaster master = vendorDtoToMaster(vendorDto, vendorDto.getVendorStatus());
                 vendorMasterRepository.save(master);
                 return new Response("Transaction Completed!", HttpStatus.OK);
             } else {
@@ -142,7 +154,7 @@ public class VendorServiceImpl implements VendorService {
         return vendorDto;
     }
 
-    private VendorMaster vendorDtoToMaster(VendorDto vendorDto) {
+    private VendorMaster vendorDtoToMaster(VendorDto vendorDto, String vendorStatus) {
         VendorMaster vendorMaster = new VendorMaster();
         vendorMaster.setOrgId(vendorDto.getOrgId());
         vendorMaster.setVendorName(vendorDto.getVendorName());
@@ -174,7 +186,7 @@ public class VendorServiceImpl implements VendorService {
         vendorMaster.setTypeOfEnterprises(vendorDto.getTypeOfEnterprises());
         vendorMaster.setRegistrationNo(vendorDto.getRegistrationNo());
         vendorMaster.setOneTimeVendor(vendorDto.getOneTimeVendor());
-        vendorMaster.setVendorStatus(vendorDto.getVendorStatus());
+        vendorMaster.setVendorStatus(vendorStatus);
         vendorMaster.setDocumentPath(vendorDto.getDocumentPath());
         vendorMaster.setRcmFlag(vendorDto.getRcmFlag());
         vendorMaster.setVendorOpeningDate(DateTimeUtil.stringTimeToDateTime(vendorDto.getVendorOpeningDate(), DateTimeUtil.DDMMYYYY));
