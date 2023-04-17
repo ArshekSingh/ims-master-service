@@ -2,8 +2,10 @@ package com.sas.ims.service.serviceImpl;
 
 import com.sas.ims.dto.VendorDto;
 import com.sas.ims.entity.ApprovalDetail;
+import com.sas.ims.entity.ApprovalMatrix;
 import com.sas.ims.entity.OrganisationHierarchy;
 import com.sas.ims.entity.VendorMaster;
+import com.sas.ims.enums.Vendor;
 import com.sas.ims.exception.BadRequestException;
 import com.sas.ims.repository.ApprovalDetailRepository;
 import com.sas.ims.repository.OrganisationHierarchyRepository;
@@ -56,7 +58,6 @@ public class VendorServiceImpl implements VendorService {
     @Override
     public Response saveVendor(VendorDto vendorDto) {
         if (!StringUtils.hasText(vendorDto.getVendorName()) ||
-                !StringUtils.hasText(String.valueOf(vendorDto.getOrgId())) ||
                 !StringUtils.hasText(vendorDto.getVendorCode()) ||
                 !StringUtils.hasText(vendorDto.getAddress1()) ||
                 !StringUtils.hasText(String.valueOf(vendorDto.getPincode())) ||
@@ -66,7 +67,9 @@ public class VendorServiceImpl implements VendorService {
         UserSession userSession = userCredentialService.getUserSession();
 
         //Create vendor master from request
-        VendorMaster vendorMaster = vendorDtoToMaster(vendorDto, "I");
+        VendorMaster vendorMaster = vendorDtoToMaster(vendorDto, Vendor.PENDING.getKey());
+
+//        ApprovalMatrix approvalMatrix =
 
         //Fetch approval matrix from Organisation Hierarchy
 //        List<OrganisationHierarchy> organisationHierarchyList = organisationHierarchyRepository.findByOrgIdAndHierarchyCodeAndHierarchyTypeAndStatus(userSession.getCompany().getCompanyId(), "VENDOR", "GEO", true);

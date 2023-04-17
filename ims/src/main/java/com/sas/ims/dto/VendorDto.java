@@ -1,12 +1,7 @@
 package com.sas.ims.dto;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.Setter;
-
-import javax.persistence.Column;
-import java.time.LocalDateTime;
 
 @Getter
 @Setter
