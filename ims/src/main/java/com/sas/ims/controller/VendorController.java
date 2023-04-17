@@ -49,4 +49,10 @@ public class VendorController {
         return vendorService.saveVendor(vendorDto);
     }
 
+    @PostMapping("/remove/{vendorId}")
+    public Response removeVendor(@PathVariable Long vendorId) {
+        log.info("Request received for adding vendor");
+        return vendorService.removeVendor(vendorId);
+    }
+
 }

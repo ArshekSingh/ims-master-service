@@ -13,5 +13,5 @@ public interface VendorService {
 
     Response updateVendor(VendorDto vendorDto) throws BadRequestException;
 
-    Response removeVendor(VendorDto vendorDto);
+    Response removeVendor(Long vendorId);
 }

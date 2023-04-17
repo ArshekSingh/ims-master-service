@@ -108,10 +108,12 @@ public class VendorServiceImpl implements VendorService {
     }
 
     @Override
-    public Response removeVendor(VendorDto vendorDto) {
-        Optional<VendorMaster> vendorMaster = vendorMasterRepository.findById(vendorDto.getVendorId());
+    public Response removeVendor(Long vendorId) {
+        UserSession userSession = userCredentialService.getUserSession();
+        Optional<VendorMaster> vendorMaster = vendorMasterRepository.findById(vendorId);
         if (vendorMaster.isPresent()) {
-            return new Response();
+            vendorMasterRepository.updateVendorDetails(userSession.getCompany().getCompanyId(), vendorId);
+            return new Response("Vendor Status has been Updated SUccessfully", HttpStatus.OK);
         } else {
             return new Response("Vendor Doesn't Exists", HttpStatus.NOT_FOUND);
         }
