@@ -53,7 +53,7 @@ public class BranchServiceImpl implements BranchService, Constant {
 
     @Override
     public Response getBranchDetailList(FilterRequest filterRequest) throws BadRequestException {
-        Pageable pageable = PageRequest.of(filterRequest.getStartIndex(), filterRequest.getEndIndex(), Sort.by("branchId").descending());
+        Pageable pageable = PageRequest.of(filterRequest.getStart(), filterRequest.getLimit(), Sort.by("branchId").descending());
         List<BranchMaster> branchMasterList = filteredData(specification(filterRequest), pageable);
         List<BranchMasterDto> branchMasterDtos = new ArrayList<>();
         if (!CollectionUtils.isEmpty(branchMasterList)) {

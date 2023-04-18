@@ -19,9 +19,11 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -67,7 +69,7 @@ public class VendorServiceImpl implements VendorService {
         UserSession userSession = userCredentialService.getUserSession();
 
         //Create vendor master from request
-        VendorMaster vendorMaster = vendorDtoToMaster(vendorDto, Vendor.PENDING.getKey());
+        VendorMaster vendorMaster = vendorDtoToMaster(vendorDto, Vendor.PENDING.getKey(), userSession, false);
 
 //        ApprovalMatrix approvalMatrix =
 
@@ -90,12 +92,18 @@ public class VendorServiceImpl implements VendorService {
 
     @Override
     public Response updateVendor(VendorDto vendorDto) throws BadRequestException {
-        if (vendorDto.getVendorId() == null)
-            throw new BadRequestException("Vendor ID cannot be empty!", HttpStatus.BAD_REQUEST);
+        UserSession userSession = userCredentialService.getUserSession();
+        if (!StringUtils.hasText(vendorDto.getVendorName()) ||
+                !StringUtils.hasText(vendorDto.getVendorCode()) ||
+                !StringUtils.hasText(vendorDto.getAddress1()) ||
+                !StringUtils.hasText(String.valueOf(vendorDto.getPincode())) ||
+                !StringUtils.hasText(vendorDto.getStateId())) {
+            return new Response("Invalid Request!", HttpStatus.BAD_REQUEST);
+        }
         try {
             Optional<VendorMaster> vendorMaster = vendorMasterRepository.findById(vendorDto.getVendorId());
             if (vendorMaster.isPresent()) {
-                VendorMaster master = vendorDtoToMaster(vendorDto, vendorDto.getVendorStatus());
+                VendorMaster master = vendorDtoToMaster(vendorDto, vendorDto.getVendorStatus(), userSession, true);
                 vendorMasterRepository.save(master);
                 return new Response("Transaction Completed!", HttpStatus.OK);
             } else {
@@ -122,6 +130,7 @@ public class VendorServiceImpl implements VendorService {
     private VendorDto vendorMasterToDto(VendorMaster vendorMaster) {
         VendorDto vendorDto = new VendorDto();
         vendorDto.setOrgId(vendorMaster.getOrgId());
+        vendorDto.setVendorCode(vendorMaster.getVendorCode());
         vendorDto.setVendorId(vendorMaster.getVendorId());
         vendorDto.setVendorName(vendorMaster.getVendorName());
         vendorDto.setVendorGroup(vendorMaster.getVendorGroup());
@@ -159,9 +168,10 @@ public class VendorServiceImpl implements VendorService {
         return vendorDto;
     }
 
-    private VendorMaster vendorDtoToMaster(VendorDto vendorDto, String vendorStatus) {
+    private VendorMaster vendorDtoToMaster(VendorDto vendorDto, String vendorStatus, UserSession userSession, Boolean update) {
         VendorMaster vendorMaster = new VendorMaster();
-        vendorMaster.setOrgId(vendorDto.getOrgId());
+        if (update) vendorMaster.setVendorId(vendorDto.getVendorId());
+        vendorMaster.setOrgId(userSession.getCompany().getCompanyId());
         vendorMaster.setVendorName(vendorDto.getVendorName());
         vendorMaster.setVendorCode(vendorDto.getVendorCode());
         vendorMaster.setVendorGroup(vendorDto.getVendorGroup());
@@ -195,7 +205,9 @@ public class VendorServiceImpl implements VendorService {
         vendorMaster.setDocumentPath(vendorDto.getDocumentPath());
         vendorMaster.setRcmFlag(vendorDto.getRcmFlag());
         vendorMaster.setVendorOpeningDate(DateTimeUtil.stringTimeToDateTime(vendorDto.getVendorOpeningDate(), DateTimeUtil.DDMMYYYY));
-        vendorMaster.setVendorClosingDate(DateTimeUtil.stringToDateTime(vendorDto.getVendorClosingDate(), DateTimeUtil.DDMMYYYY));
+        vendorMaster.setVendorClosingDate(DateTimeUtil.stringTimeToDateTime(vendorDto.getVendorClosingDate(), DateTimeUtil.DDMMYYYY));
+        vendorMaster.setInsertedOn(LocalDateTime.now());
+        vendorMaster.setInsertedBy(userSession.getSub());
         return vendorMaster;
     }
 }
