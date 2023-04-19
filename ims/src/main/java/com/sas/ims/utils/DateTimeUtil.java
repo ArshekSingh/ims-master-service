@@ -178,4 +178,9 @@ public class DateTimeUtil {
         c.add(Calendar.DATE, getDateBeforeXDays);
         return c.getTime();
     }
+
+    public static LocalDateTime stringToLocalDateTime(String localDateTimeString, String format) {
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(format);
+        return StringUtils.hasText(localDateTimeString) ? LocalDate.parse(localDateTimeString, dateTimeFormatter).atStartOfDay() : null;
+    }
 }

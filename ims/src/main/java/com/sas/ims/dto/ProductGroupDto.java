@@ -8,7 +8,7 @@ import lombok.Setter;
 public class ProductGroupDto extends BaseDto{
 	
 	private Long orgId;
-	private Long parentGroupId;
+	private Long partnerGroupId;
 	private Long productGroupId;
 	private String groupCode;
 	private String groupName;

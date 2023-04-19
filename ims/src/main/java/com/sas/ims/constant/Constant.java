@@ -13,6 +13,6 @@ public interface Constant {
 
     String ACTIVE_STATUS="A";
     String IN_ACTIVE_STATUS="X";
-    String PARENT_GROUP_TYPE="P";
+    String PARTNER_GROUP_TYPE ="P";
 
 }

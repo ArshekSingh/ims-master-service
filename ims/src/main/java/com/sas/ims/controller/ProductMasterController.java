@@ -21,7 +21,7 @@ import com.sas.ims.service.ProductMasterService;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/product")
 @CrossOrigin("*")
 @Slf4j
 public class ProductMasterController {
@@ -36,13 +36,14 @@ public class ProductMasterController {
         return productMasterService.addProductMaster(dto);
     }
 
-    @PostMapping("/products")
+    @PostMapping("/getProductList")
     public Response getProductList(@RequestBody ProductMasterDto dto) throws BadRequestException {
         return productMasterService.getActiveProductDetails(dto);
     }
 
-    @GetMapping(value = "/product/{productId}")
+    @GetMapping(value = "/{productId}")
     public Response getProductDetailsById(@PathVariable Long productId) throws ObjectNotFoundException {
+        log.info("get product detail for productId {}", productId);
         return productMasterService.getProductDetailsById(productId);
     }
 
@@ -51,7 +52,7 @@ public class ProductMasterController {
         return productMasterService.updateProductMaster(dto);
     }
     
-    @PutMapping("/delete")
+    @PutMapping("/delete/{productId}")
     public Response softDeleteProduct(@PathVariable Long productId) throws ObjectNotFoundException, BadRequestException {
         return productMasterService.softDeleteProduct(productId);
     }

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -17,6 +18,7 @@ import com.google.gson.JsonObject;
 import com.sas.ims.dto.ProductMasterDto;
 
 @Component
+@Slf4j
 public class ProductConvertor {
 
 	@Autowired
@@ -26,10 +28,8 @@ public class ProductConvertor {
 	ObjectMapper objectMapper;
 
 	public List<ProductMasterDto> convertFileToDto(MultipartFile file) {
-		// TODO Auto-generated method stub
 		List<ProductMasterDto> dtoList = new ArrayList<>();
-		try {
-			XSSFWorkbook workBook = new XSSFWorkbook(file.getInputStream());
+		try(XSSFWorkbook workBook = new XSSFWorkbook(file.getInputStream())) {
 			XSSFSheet workSheet = workBook.getSheetAt(0);
 			List<JsonObject> dataList = new ArrayList<>();
 			XSSFRow header = workSheet.getRow(0);
@@ -49,8 +49,7 @@ public class ProductConvertor {
 				dtoList.add(dto);
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.error("Exception occurred due to {}", e.getMessage());
 		}
 		return dtoList;
 	}

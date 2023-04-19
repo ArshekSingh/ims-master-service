@@ -24,8 +24,4 @@ public class ProductMasterDto extends BaseDto{
 	private int startIndex;
 	private int endIndex;
 	private Boolean isProccesble;
-	
-	
-	
-
 }

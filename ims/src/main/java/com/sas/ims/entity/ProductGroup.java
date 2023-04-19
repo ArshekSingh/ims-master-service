@@ -28,8 +28,8 @@ public class ProductGroup extends BaseEntity {
 	@Column(name = "ORG_ID")
 	private Long orgId;
 
-	@Column(name = "PARENT_GROUP_ID")
-	private Long parentGroupId;
+	@Column(name = "PARTNER_GROUP_ID")
+	private Long partnerGroupId;
 
 	@Column(name = "GROUP_CODE")
 	private String groupCode;
@@ -40,7 +40,7 @@ public class ProductGroup extends BaseEntity {
 	@Column(name="GROUP_TYPE")
 	private String groupType;
 
-	@Column(name="ACTIVE")
-	private String active;
+	@Column(name="STATUS")
+	private String status;
 
 }
