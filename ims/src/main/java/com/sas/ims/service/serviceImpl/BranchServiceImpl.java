@@ -1,10 +1,15 @@
 package com.sas.ims.service.serviceImpl;
 
 import com.sas.ims.constant.Constant;
+import com.sas.ims.dto.ProductsToBranchMappingDto;
+import com.sas.ims.dto.ServerSideDropDownDto;
+import com.sas.ims.entity.BranchProductMapping;
 import com.sas.ims.exception.BadRequestException;
 import com.sas.ims.exception.ObjectNotFoundException;
 import com.sas.ims.repository.BranchMasterRepository;
+import com.sas.ims.repository.BranchProductMappingRepository;
 import com.sas.ims.repository.OrganisationHierarchyRepository;
+import com.sas.ims.repository.ProductMasterRepository;
 import com.sas.ims.response.Response;
 import com.sas.ims.service.BranchService;
 import com.sas.ims.dto.BranchMasterDto;
@@ -15,6 +20,7 @@ import com.sas.ims.utils.DateTimeUtil;
 import com.sas.ims.utils.ObjectMapperUtil;
 import com.sas.tokenlib.service.UserCredentialService;
 import com.sas.tokenlib.utils.UserSession;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,18 +33,24 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import javax.persistence.criteria.Predicate;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@AllArgsConstructor
 public class BranchServiceImpl implements BranchService, Constant {
     private UserCredentialService userCredentialService;
 
     private BranchMasterRepository branchMasterRepository;
 
     private OrganisationHierarchyRepository hierarchyRepository;
+
+    private ProductMasterRepository productMasterRepository;
+
+    private BranchProductMappingRepository branchProductMappingRepository;
 
     @Override
     public Response getBranchDetail(Long branchId) throws ObjectNotFoundException {
@@ -143,5 +155,47 @@ public class BranchServiceImpl implements BranchService, Constant {
 //        branchMasterDto.mapDtoToEntityForBranchUpdate(branchMasterDto, branchMaster, userSession);
         branchMasterRepository.save(branchMaster);
         return new Response("Branch updated successfully", HttpStatus.OK);
+    }
+
+    @Override
+    public Response getProductsAssignedOrAvailableToBranch(Long branchId) {
+        Response response = new Response();
+        UserSession userSession = userCredentialService.getUserSession();
+        List<Object[]> productsAssignedToProducts = branchProductMappingRepository.getProductsByOrgIdAndBranchId(userSession.getCompany().getCompanyId(), branchId);
+        ProductsToBranchMappingDto productsToBranchMappingDto = new ProductsToBranchMappingDto();
+        List<Integer> productList = new ArrayList<>();
+        productsToBranchMappingDto.setBranchId(branchId.intValue());
+        List<ServerSideDropDownDto> productsAssignedToBranch = productsAssignedToProducts.stream().map(branchData -> populateBranchDataForProduct(branchData, productList)).collect(Collectors.toList());
+        List<Object[]> availableProductList;
+        if (productList.isEmpty()) {
+            availableProductList = productMasterRepository.findAllProductDetailByOrgId(userSession.getCompany().getCompanyId());
+        } else {
+            availableProductList = productMasterRepository.findAllProductsByOrganizationIdNotIn(userSession.getCompany().getCompanyId(), productList);
+        }
+        List<ServerSideDropDownDto> productsAvailableForBranch = availableProductList.stream().map(this::populateAvailableProductData).collect(Collectors.toList());
+        productsToBranchMappingDto.setAssignedProducts(productsAssignedToBranch);
+        productsToBranchMappingDto.setAvailableProducts(productsAvailableForBranch);
+        response.setCode(HttpStatus.OK.value());
+        response.setStatus(HttpStatus.OK);
+        response.setData(productsToBranchMappingDto);
+        response.setMessage("Transaction completed successfully.");
+        return response;
+    }
+
+    private ServerSideDropDownDto populateBranchDataForProduct(Object[] branchData, List<Integer> productList) {
+        ServerSideDropDownDto branchAssignedProduct = new ServerSideDropDownDto();
+        Integer productId = (int) branchData[0];
+        branchAssignedProduct.setId(productId.toString());
+        branchAssignedProduct.setLabel((String) branchData[1]);
+        productList.add(productId);
+        return branchAssignedProduct;
+    }
+
+    private ServerSideDropDownDto populateAvailableProductData(Object[] product) {
+        ServerSideDropDownDto availableProduct = new ServerSideDropDownDto();
+        availableProduct.setId(product[0].toString());
+        availableProduct.setLabel(product[1].toString());
+
+        return availableProduct;
     }
 }

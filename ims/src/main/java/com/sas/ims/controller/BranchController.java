@@ -6,12 +6,14 @@ import com.sas.ims.exception.ObjectNotFoundException;
 import com.sas.ims.request.FilterRequest;
 import com.sas.ims.response.Response;
 import com.sas.ims.service.BranchService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping(value = "/api/branch")
 @CrossOrigin(origins = "*")
+@Slf4j
 public class BranchController {
 
     @Autowired
@@ -36,6 +38,12 @@ public class BranchController {
     @PostMapping("/updateBranch")
     public Response updateBranch(@RequestBody BranchMasterDto branchMasterDto) throws ObjectNotFoundException {
         return branchService.updateBranch(branchMasterDto);
+    }
+
+    @GetMapping(value = "getProductListAssignedToBranch/{branchId}")
+    public Response getProductListAssignedToBranch(@PathVariable Long branchId) {
+        log.info("getProductListAssignedToBranch() invoked for branchId : {}", branchId);
+        return branchService.getProductsAssignedOrAvailableToBranch(branchId);
     }
 
 }

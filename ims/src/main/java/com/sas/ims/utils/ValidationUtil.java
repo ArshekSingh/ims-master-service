@@ -7,9 +7,6 @@ import org.springframework.util.StringUtils;
 
 public class ValidationUtil {
     public static void validateAddProductRequest(ProductMasterDto dto) throws BadRequestException {
-        if(dto.getProductId() == null) {
-            throw new BadRequestException("Product id is required", HttpStatus.BAD_REQUEST);
-        }
         if(dto.getProductGroupId() == null) {
             throw new BadRequestException("Product group id is required", HttpStatus.BAD_REQUEST);
         }

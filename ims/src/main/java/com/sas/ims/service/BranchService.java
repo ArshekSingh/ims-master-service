@@ -14,4 +14,6 @@ public interface BranchService {
     Response addBranch(BranchMasterDto branchMasterDto) throws ObjectNotFoundException, BadRequestException;
 
     Response updateBranch(BranchMasterDto branchMasterDto) throws ObjectNotFoundException;
+
+    Response getProductsAssignedOrAvailableToBranch(Long branchId);
 }
