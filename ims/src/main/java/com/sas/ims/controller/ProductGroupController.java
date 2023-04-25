@@ -2,6 +2,7 @@ package com.sas.ims.controller;
 
 import com.sas.ims.exception.BadRequestException;
 import com.sas.ims.exception.ObjectNotFoundException;
+import com.sas.tokenlib.response.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -11,9 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.sas.ims.dto.ProductGroupDto;
-import com.sas.ims.response.Response;
 import com.sas.ims.service.ProductGroupService;
 
 @RestController

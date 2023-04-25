@@ -11,8 +11,8 @@ import java.util.Optional;
 @Repository
 public interface PincodeRepository extends JpaRepository<PincodeMaster, Integer> {
 
-    @Query(value = "select * from pincode_master where pincode like :pincode% AND ACTIVE ='Y'", nativeQuery = true)
-    List<PincodeMaster> findAllByPincodeMaster(Integer pincode);
+    @Query(value = "SELECT * FROM pincode_master WHERE CAST(pincode AS TEXT) LIKE CONCAT('%',:pincode,'%') and ACTIVE = 'Y'", nativeQuery = true)
+    List<PincodeMaster> findAllByPincodeMaster(String pincode);
 
     Optional<PincodeMaster> findByPincodeMasterPK_PincodeAndPincodeMasterPK_CountryId(Integer pincode, Integer countryId);
 

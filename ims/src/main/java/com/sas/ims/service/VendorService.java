@@ -2,7 +2,7 @@ package com.sas.ims.service;
 
 import com.sas.ims.dto.VendorDto;
 import com.sas.ims.exception.BadRequestException;
-import com.sas.ims.response.Response;
+import com.sas.tokenlib.response.Response;
 
 public interface VendorService {
     Response getVendorById(Long vendorId);

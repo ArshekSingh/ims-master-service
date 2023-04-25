@@ -8,10 +8,8 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface OrganisationHierarchyRepository  extends JpaRepository<OrganisationHierarchy,Long> {
-
-
+public interface OrganisationHierarchyRepository extends JpaRepository<OrganisationHierarchy, Long> {
     Optional<List<OrganisationHierarchy>> findByOrgIdAndHierarchyTypeOrderByHierarchySequenceAsc(Long valueOf, String geo);
 
-    List<OrganisationHierarchy> findByOrgIdAndHierarchyCodeAndHierarchyTypeAndStatus(Long orgId, String vendor, String geo, boolean b);
+    Optional<List<OrganisationHierarchy>> findByOrgIdAndHierarchyTypeAndStatusOrderByHierarchySequenceAsc(Long orgId, String hierarchyType, String status);
 }

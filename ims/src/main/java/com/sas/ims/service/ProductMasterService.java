@@ -1,10 +1,10 @@
 package com.sas.ims.service;
 
 import com.sas.ims.exception.BadRequestException;
+import com.sas.tokenlib.response.Response;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.sas.ims.dto.ProductMasterDto;
-import com.sas.ims.response.Response;
 
 public interface ProductMasterService {
 	

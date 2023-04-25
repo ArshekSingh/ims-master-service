@@ -15,4 +15,6 @@ public interface Constant {
     String IN_ACTIVE_STATUS="X";
     String PARTNER_GROUP_TYPE ="P";
 
+    public static final String REFERENCE_DETAIL_H = "REFERENCE_DETAIL_H";
+
 }

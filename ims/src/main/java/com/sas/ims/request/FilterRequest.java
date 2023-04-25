@@ -13,7 +13,9 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FilterRequest {
-    private Integer branchId;
+    private int page;
+    private int size;
+    private String areaType;
     private Long centerId;
     private Long clientId;
     private Long departmentId;

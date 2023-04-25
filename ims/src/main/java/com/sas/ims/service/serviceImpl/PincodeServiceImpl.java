@@ -2,8 +2,10 @@ package com.sas.ims.service.serviceImpl;
 
 import com.sas.ims.constant.Constant;
 import com.sas.ims.dao.PincodeDao;
+import com.sas.ims.dto.DistrictMasterDto;
 import com.sas.ims.dto.PincodeMasterDto;
 import com.sas.ims.dto.StateMasterDto;
+import com.sas.ims.entity.DistrictMaster;
 import com.sas.ims.entity.PincodeMaster;
 import com.sas.ims.entity.PincodeMasterPK;
 import com.sas.ims.entity.StateMaster;
@@ -37,7 +39,7 @@ public class PincodeServiceImpl implements PincodeService, Constant {
 
     @Override
     public Response getPincodeList(Integer pincode) {
-        List<PincodeMaster> pincodeMasterList = pincodeRepository.findAllByPincodeMaster(pincode);
+        List<PincodeMaster> pincodeMasterList = pincodeRepository.findAllByPincodeMaster(String.valueOf(pincode));
         List<PincodeMasterDto> pincodeMasterDtoList = new ArrayList<>();
         for (PincodeMaster pincodeMaster : pincodeMasterList) {
             //Pincode List with state, district and village
@@ -50,6 +52,13 @@ public class PincodeServiceImpl implements PincodeService, Constant {
             stateMasterDto.setStateCode(stateMaster.getStateCode());
             stateMasterDto.setStateName(stateMaster.getStateName());
             pincodeMasterDto.setState(stateMasterDto);
+
+            DistrictMaster districtMaster = pincodeMaster.getDistrictMaster();
+            DistrictMasterDto districtMasterDto = new DistrictMasterDto();
+            districtMasterDto.setDistrictId(districtMaster.getDistrictId());
+            districtMasterDto.setDistrictCode(districtMaster.getDistrictCode());
+            districtMasterDto.setDistrictName(districtMaster.getDistrictName());
+            pincodeMasterDto.setDistrict(districtMasterDto);
 
             pincodeMasterDtoList.add(pincodeMasterDto);
         }

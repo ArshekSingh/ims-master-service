@@ -24,4 +24,6 @@ public interface ProductMasterRepository extends JpaRepository<ProductMaster, Lo
 
 	@Query(value = "SELECT LPM.PRODUCT_ID, LPM.PRODUCT_NAME, LPM.PRODUCT_CODE FROM PRODUCT_MASTER LPM WHERE LPM.ORG_ID =:companyId AND LPM.PRODUCT_ID NOT IN (:productList) AND LPM.STATUS ='A'", nativeQuery = true)
 	List<Object[]> findAllProductsByOrganizationIdNotIn(Long companyId, List<Integer> productList);
+
+    Long findProductGroupIdByProductId(Long productId);
 }

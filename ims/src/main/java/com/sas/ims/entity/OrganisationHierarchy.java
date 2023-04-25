@@ -33,7 +33,7 @@ public class OrganisationHierarchy extends BaseEntity implements Serializable {
     private Long hierarchySequence;
 
     @Column(name = "STATUS")
-    private boolean status;
+    private String status;
 
 }
 

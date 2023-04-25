@@ -4,31 +4,28 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @NoArgsConstructor
-public class BranchMasterDto {
+public class AreaMasterDto {
 
-    private Long branchId;
+    private Long areaId;
+
     private Long orgId;
 
-    private String branchType;
+    private String areaType;
 
     private Long parentId;
 
-    private String branchCode;
+    private String areaCode;
 
-    private String branchName;
+    private String areaName;
 
-    private LocalDateTime branchOpeningDate;
+    private String areaOpeningDate;
 
-    private LocalDateTime branchClosingDate;
+    private String areaClosingDate;
 
     private String status;
 
@@ -46,9 +43,10 @@ public class BranchMasterDto {
 
     private String emailId;
 
-    private String partnerReffrenceCode;
+    private String partnerReferenceCode;
 
     private String createdOn;
+
     private String modifiedOn;
 
 }

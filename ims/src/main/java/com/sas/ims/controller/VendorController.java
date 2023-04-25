@@ -3,18 +3,11 @@ package com.sas.ims.controller;
 import com.sas.ims.dto.VendorDto;
 import com.sas.ims.exception.BadRequestException;
 import com.sas.ims.request.VendorListRequest;
-import com.sas.ims.response.Response;
 import com.sas.ims.service.VendorService;
+import com.sas.tokenlib.response.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.SimpleTimeZone;
 
 @RestController
 @RequestMapping("/api/vendor")

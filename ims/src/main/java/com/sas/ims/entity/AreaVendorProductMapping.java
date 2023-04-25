@@ -10,8 +10,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "BRANCH_VENDOR_PRODUCT_MAPPING")
-public class BranchVendorProductMapping implements Serializable{
+@Table(name = "AREA_VENDOR_PRODUCT_MAPPING")
+public class AreaVendorProductMapping implements Serializable{
 
 	private static final long serialVersionUID = -598940486010829682L;
 
@@ -26,8 +26,8 @@ public class BranchVendorProductMapping implements Serializable{
     @Column(name = "ORG_ID")
     private Long ORG_ID;
 
-    @Column(name = "BRANCH_ID")
-    private Long BRANCH_ID;
+    @Column(name = "AREA_ID")
+    private Long AREA_ID;
 
     @Column(name = "VENDOR_ID")
     private Long VENDOR_ID;

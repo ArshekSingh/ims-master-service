@@ -1,25 +1,21 @@
 package com.sas.ims.service.serviceImpl;
 
 import com.sas.ims.dto.VendorDto;
-import com.sas.ims.entity.ApprovalDetail;
-import com.sas.ims.entity.ApprovalMatrix;
-import com.sas.ims.entity.OrganisationHierarchy;
 import com.sas.ims.entity.VendorMaster;
 import com.sas.ims.enums.Vendor;
 import com.sas.ims.exception.BadRequestException;
 import com.sas.ims.repository.ApprovalDetailRepository;
 import com.sas.ims.repository.OrganisationHierarchyRepository;
 import com.sas.ims.repository.VendorMasterRepository;
-import com.sas.ims.response.Response;
 import com.sas.ims.service.VendorService;
 import com.sas.ims.utils.DateTimeUtil;
+import com.sas.tokenlib.response.Response;
 import com.sas.tokenlib.service.UserCredentialService;
 import com.sas.tokenlib.utils.UserSession;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -63,6 +59,7 @@ public class VendorServiceImpl implements VendorService {
                 !StringUtils.hasText(vendorDto.getVendorCode()) ||
                 !StringUtils.hasText(vendorDto.getAddress1()) ||
                 !StringUtils.hasText(String.valueOf(vendorDto.getPincode())) ||
+                !StringUtils.hasText(vendorDto.getPhone()) ||
                 !StringUtils.hasText(vendorDto.getStateId())) {
             return new Response("Invalid Request!", HttpStatus.BAD_REQUEST);
         }

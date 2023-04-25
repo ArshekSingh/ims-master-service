@@ -14,13 +14,21 @@ public class CodeHelper {
 
 	private static final String header = "/**\n * @author shahzad.hussain \n */\n";
 
+	public static void someMethod(Object o) {
+		System.out.println("Object method Invoked");
+	}
+	public static void someMethod(String s) {
+		System.out.println("String method Invoked");
+	}
+
 	public static void main(String[] args) {
-		List<TableData> tableList = new ArrayList<>();
-		tableList.add(new TableData("departmentName", "String", "", true, false));
-		tableList.add(new TableData("departmentAddress", "String", "", true, false));
-		tableList.add(new TableData("departmentCode", "String", "", true, false));
-		tableList.add(new TableData("deparmentId", "Long", "", true, false));
-		createCollection("Test", tableList);
+		someMethod(null);
+//		List<TableData> tableList = new ArrayList<>();
+//		tableList.add(new TableData("departmentName", "String", "", true, false));
+//		tableList.add(new TableData("departmentAddress", "String", "", true, false));
+//		tableList.add(new TableData("departmentCode", "String", "", true, false));
+//		tableList.add(new TableData("deparmentId", "Long", "", true, false));
+//		createCollection("Test", tableList);
 	}
 
 	private static void createCollection(String entityName, List<TableData> fieldsMap) {

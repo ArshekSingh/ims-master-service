@@ -4,17 +4,16 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
 import com.sas.ims.converter.ProductConvertor;
 import com.sas.ims.exception.BadRequestException;
 import com.sas.ims.repository.ProductMasterRepository;
 import com.sas.ims.service.ProductMasterService;
 import com.sas.ims.utils.ValidationUtil;
+import com.sas.tokenlib.response.Response;
 import com.sas.tokenlib.service.UserCredentialService;
 import com.sas.tokenlib.utils.UserSession;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -25,7 +24,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.sas.ims.dto.ProductMasterDto;
 import com.sas.ims.entity.ProductMaster;
-import com.sas.ims.response.Response;
 import com.sas.ims.utils.DateTimeUtil;
 import com.sas.ims.utils.ObjectMapperUtil;
 
