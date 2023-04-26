@@ -237,7 +237,7 @@ public class AreaServiceImpl implements AreaService, Constant {
         UserSession userSession = userCredentialService.getUserSession();
         List<Object[]> productsAssignedToProducts = areaProductMappingRepository.getProductsByOrgIdAndAreaId(userSession.getCompany().getCompanyId(), areaId);
         ProductsToAreaMappingDto productsToAreaMappingDto = new ProductsToAreaMappingDto();
-        List<Integer> productList = new ArrayList<>();
+        List<Long> productList = new ArrayList<>();
         productsToAreaMappingDto.setAreaId(areaId);
         List<ServerSideDropDownDto> productsAssignedToArea = productsAssignedToProducts.stream().map(branchData -> populateAreaDataForProduct(branchData, productList)).collect(Collectors.toList());
         List<Object[]> availableProductList;
@@ -256,12 +256,12 @@ public class AreaServiceImpl implements AreaService, Constant {
         return response;
     }
 
-    private ServerSideDropDownDto populateAreaDataForProduct(Object[] areaData, List<Integer> productList) {
+    private ServerSideDropDownDto populateAreaDataForProduct(Object[] areaData, List<Long> productList) {
         ServerSideDropDownDto areaAssignedProduct = new ServerSideDropDownDto();
-        Integer productId = (int) areaData[0];
+        Integer productId = (Integer) areaData[0];
         areaAssignedProduct.setId(productId.toString());
         areaAssignedProduct.setLabel((String) areaData[1]);
-        productList.add(productId);
+        productList.add(productId.longValue());
         return areaAssignedProduct;
     }
 
@@ -276,7 +276,7 @@ public class AreaServiceImpl implements AreaService, Constant {
     public Response assignProductsToBranch(ProductsToAreaMappingDto productsToAreaMapping) {
         Response response = new Response();
         UserSession userSession = userCredentialService.getUserSession();
-        List<AreaProductMapping> areaProductMappingList = areaProductMappingRepository.findByAreaProductMappingPK_AreaIdAndAreaProductMappingPK_OrgId(productsToAreaMapping.getAreaId(), userSession.getOrgId());
+        List<AreaProductMapping> areaProductMappingList = areaProductMappingRepository.findByAreaProductMappingPK_AreaIdAndAreaProductMappingPK_OrgId(productsToAreaMapping.getAreaId(), userSession.getCompany().getCompanyId());
         if (!CollectionUtils.isEmpty(areaProductMappingList)) {
             areaProductMappingRepository.deleteAll(areaProductMappingList);
         }
