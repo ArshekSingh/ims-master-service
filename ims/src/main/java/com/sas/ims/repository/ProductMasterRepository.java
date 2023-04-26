@@ -14,16 +14,17 @@ import com.sas.ims.entity.ProductMaster;
 
 @Repository
 public interface ProductMasterRepository extends JpaRepository<ProductMaster, Long> {
-	
-	Optional<ProductMaster> findByOrgIdAndProductId(Long orgId, Long productId);
-	
-	Page<ProductMaster> findByOrgIdAndProductCode(Long orgId, String productCode, Pageable pageable);
 
-	@Query(value = "SELECT LPM.PRODUCT_ID, LPM.PRODUCT_NAME, LPM.PRODUCT_CODE FROM PRODUCT_MASTER LPM WHERE LPM.ORG_ID =:companyId AND LPM.STATUS ='A'", nativeQuery = true)
-	List<Object[]> findAllProductDetailByOrgId(Long companyId);
+    Optional<ProductMaster> findByOrgIdAndProductId(Long orgId, Long productId);
 
-	@Query(value = "SELECT LPM.PRODUCT_ID, LPM.PRODUCT_NAME, LPM.PRODUCT_CODE FROM PRODUCT_MASTER LPM WHERE LPM.ORG_ID =:companyId AND LPM.PRODUCT_ID NOT IN (:productList) AND LPM.STATUS ='A'", nativeQuery = true)
-	List<Object[]> findAllProductsByOrganizationIdNotIn(Long companyId, List<Integer> productList);
+    Page<ProductMaster> findByOrgIdAndProductCode(Long orgId, String productCode, Pageable pageable);
 
+    @Query(value = "SELECT LPM.PRODUCT_ID, LPM.PRODUCT_NAME, LPM.PRODUCT_CODE FROM PRODUCT_MASTER LPM WHERE LPM.ORG_ID =:companyId AND LPM.STATUS ='A'", nativeQuery = true)
+    List<Object[]> findAllProductDetailByOrgId(Long companyId);
+
+    @Query(value = "SELECT LPM.PRODUCT_ID, LPM.PRODUCT_NAME, LPM.PRODUCT_CODE FROM PRODUCT_MASTER LPM WHERE LPM.ORG_ID =:companyId AND LPM.PRODUCT_ID NOT IN (:productList) AND LPM.STATUS ='A'", nativeQuery = true)
+    List<Object[]> findAllProductsByOrganizationIdNotIn(Long companyId, List<Long> productList);
+
+    @Query(value = "SELECT LPM.PRODUCT_GROUP_ID FROM PRODUCT_MASTER LPM WHERE LPM.PRODUCT_ID=:productId", nativeQuery = true)
     Long findProductGroupIdByProductId(Long productId);
 }
