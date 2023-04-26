@@ -1,12 +1,13 @@
 package com.sas.ims.service.serviceImpl;
 
+import com.sas.ims.dto.ProductsToAreaMappingDto;
+import com.sas.ims.dto.ProductsToVendorMappingDto;
+import com.sas.ims.dto.ServerSideDropDownDto;
 import com.sas.ims.dto.VendorDto;
-import com.sas.ims.entity.VendorMaster;
+import com.sas.ims.entity.*;
 import com.sas.ims.enums.Vendor;
 import com.sas.ims.exception.BadRequestException;
-import com.sas.ims.repository.ApprovalDetailRepository;
-import com.sas.ims.repository.OrganisationHierarchyRepository;
-import com.sas.ims.repository.VendorMasterRepository;
+import com.sas.ims.repository.*;
 import com.sas.ims.service.VendorService;
 import com.sas.ims.utils.DateTimeUtil;
 import com.sas.tokenlib.response.Response;
@@ -17,9 +18,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -32,6 +35,8 @@ public class VendorServiceImpl implements VendorService {
     private final VendorMasterRepository vendorMasterRepository;
     private final OrganisationHierarchyRepository organisationHierarchyRepository;
     private final ApprovalDetailRepository approvalDetailRepository;
+    private final ProductMasterRepository productMasterRepository;
+    private final VendorProductMappingRepository vendorProductMappingRepository;
 
     @Override
     public Response getVendorById(Long vendorId) {
@@ -206,5 +211,76 @@ public class VendorServiceImpl implements VendorService {
         vendorMaster.setInsertedOn(LocalDateTime.now());
         vendorMaster.setInsertedBy(userSession.getSub());
         return vendorMaster;
+    }
+
+
+    @Override
+    public Response getProductsAssignedOrAvailableToVendor(Long vendorId) {
+        Response response = new Response();
+        UserSession userSession = userCredentialService.getUserSession();
+        List<Object[]> productsAssignedToProducts = vendorProductMappingRepository.getProductsByOrgIdAndVendorId(userSession.getCompany().getCompanyId(), vendorId);
+        ProductsToVendorMappingDto productsToVendorMappingDto = new ProductsToVendorMappingDto();
+        List<Long> productList = new ArrayList<>();
+        productsToVendorMappingDto.setVendorId(vendorId);
+        List<ServerSideDropDownDto> productsAssignedToVendor = productsAssignedToProducts.stream().map(branchData -> populateVendorDataForProduct(branchData, productList)).collect(Collectors.toList());
+        List<Object[]> availableProductList;
+        if (productList.isEmpty()) {
+            availableProductList = productMasterRepository.findAllProductDetailByOrgId(userSession.getCompany().getCompanyId());
+        } else {
+            availableProductList = productMasterRepository.findAllProductsByOrganizationIdNotIn(userSession.getCompany().getCompanyId(), productList);
+        }
+        List<ServerSideDropDownDto> productsAvailableForVendor = availableProductList.stream().map(this::populateAvailableProductData).collect(Collectors.toList());
+        productsToVendorMappingDto.setAssignedProducts(productsAssignedToVendor);
+        productsToVendorMappingDto.setAvailableProducts(productsAvailableForVendor);
+        response.setCode(HttpStatus.OK.value());
+        response.setStatus(HttpStatus.OK);
+        response.setData(productsToVendorMappingDto);
+        response.setMessage("Transaction completed successfully.");
+        return response;
+    }
+
+    private ServerSideDropDownDto populateVendorDataForProduct(Object[] vendorData, List<Long> productList) {
+        ServerSideDropDownDto vendorAssignedProduct = new ServerSideDropDownDto();
+        Integer productId = (Integer) vendorData[0];
+        vendorAssignedProduct.setId(productId.toString());
+        vendorAssignedProduct.setLabel((String) vendorData[1]);
+        productList.add(productId.longValue());
+        return vendorAssignedProduct;
+    }
+
+    private ServerSideDropDownDto populateAvailableProductData(Object[] product) {
+        ServerSideDropDownDto availableProduct = new ServerSideDropDownDto();
+        availableProduct.setId(product[0].toString());
+        availableProduct.setLabel(product[1].toString());
+        return availableProduct;
+    }
+
+    @Override
+    public Response assignProductsToVendor(ProductsToVendorMappingDto productsToVendorMappingDto) {
+        Response response = new Response();
+        UserSession userSession = userCredentialService.getUserSession();
+        List<VendorProductMapping> vendorProductMappingList = vendorProductMappingRepository.findByVendorProductMappingPK_VendorIdAndVendorProductMappingPK_OrgId(productsToVendorMappingDto.getVendorId(), userSession.getCompany().getCompanyId());
+        if (!CollectionUtils.isEmpty(vendorProductMappingList)) {
+            vendorProductMappingRepository.deleteAll(vendorProductMappingList);
+        }
+        productsToVendorMappingDto.getAssignedProducts().forEach(serverSideDropDownDto -> saveNewAreaProductMapping(serverSideDropDownDto, productsToVendorMappingDto, userSession));
+        response.setCode(HttpStatus.OK.value());
+        response.setStatus(HttpStatus.OK);
+        response.setMessage("Transaction completed successfully.");
+        return response;
+    }
+
+    void saveNewAreaProductMapping(ServerSideDropDownDto assignedVendors, ProductsToVendorMappingDto productsToVendorMappingDto, UserSession userSession) {
+        VendorProductMapping vendorProductMapping = new VendorProductMapping();
+        VendorProductMappingPK vendorProductMappingPK = new VendorProductMappingPK();
+        vendorProductMappingPK.setProductId(Long.parseLong(assignedVendors.getId()));
+        vendorProductMappingPK.setVendorId(productsToVendorMappingDto.getVendorId());
+        vendorProductMappingPK.setOrgId(userSession.getCompany().getCompanyId());
+        vendorProductMapping.setVendorProductMappingPK(vendorProductMappingPK);
+        vendorProductMapping.setProductGroupId(productMasterRepository.findProductGroupIdByProductId(vendorProductMappingPK.getProductId()));
+        vendorProductMapping.setStatus("Y");
+        vendorProductMapping.setInsertedOn(LocalDateTime.now());
+        vendorProductMapping.setInsertedBy(userSession.getSub());
+        vendorProductMappingRepository.save(vendorProductMapping);
     }
 }
