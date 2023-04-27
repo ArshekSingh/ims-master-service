@@ -13,4 +13,6 @@ public class RoleDTO {
 
 	@NotEmpty
 	String roleName;
+
+	private String roleGroup;
 }
