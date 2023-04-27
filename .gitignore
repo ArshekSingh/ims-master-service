@@ -15,21 +15,19 @@ dist/
 
 # Log files
 *.log
-
+*.iml
 # Package files
 *.jar
 
 # Maven
 target/
 dist/
-.project
-.classpath
-.settings/
-.factorypath
-*.iml
+.run/
 # JetBrains IDE
 .idea/
-
+.classpath
+.project
+.settings/
 # Unit test reports
 TEST*.xml
 
@@ -51,4 +49,4 @@ Thumbs.db
 *.flv
 *.mov
 *.wmv
-
+/bin/

@@ -1,6 +1,5 @@
 package com.sas.ims.service.serviceImpl;
 
-import com.sas.ims.dto.ProductsToAreaMappingDto;
 import com.sas.ims.dto.ProductsToVendorMappingDto;
 import com.sas.ims.dto.ServerSideDropDownDto;
 import com.sas.ims.dto.VendorDto;

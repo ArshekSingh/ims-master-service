@@ -1,0 +1,1747 @@
+Index: ims/src/main/java/com/sas/ims/service/serviceImpl/BranchServiceImpl.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ims/src/main/java/com/sas/ims/service/serviceImpl/BranchServiceImpl.java b/ims/src/main/java/com/sas/ims/service/serviceImpl/AreaServiceImpl.java
+rename from ims/src/main/java/com/sas/ims/service/serviceImpl/BranchServiceImpl.java
+rename to ims/src/main/java/com/sas/ims/service/serviceImpl/AreaServiceImpl.java
+--- a/ims/src/main/java/com/sas/ims/service/serviceImpl/BranchServiceImpl.java	(revision 69032cc5cdf8eac66f71a20b8b827bb147d70491)
++++ b/ims/src/main/java/com/sas/ims/service/serviceImpl/AreaServiceImpl.java	(date 1681940612751)
+@@ -1,20 +1,23 @@
+ package com.sas.ims.service.serviceImpl;
+ 
+ import com.sas.ims.constant.Constant;
++import com.sas.ims.dto.ServerSideDropDownDto;
+ import com.sas.ims.exception.BadRequestException;
++import com.sas.ims.exception.InternalServerErrorException;
+ import com.sas.ims.exception.ObjectNotFoundException;
+-import com.sas.ims.repository.BranchMasterRepository;
++import com.sas.ims.repository.AreaMasterRepository;
+ import com.sas.ims.repository.OrganisationHierarchyRepository;
+-import com.sas.ims.response.Response;
+-import com.sas.ims.service.BranchService;
+-import com.sas.ims.dto.BranchMasterDto;
+-import com.sas.ims.entity.BranchMaster;
++import com.sas.ims.service.AreaService;
++import com.sas.ims.dto.AreaMasterDto;
++import com.sas.ims.entity.AreaMaster;
+ import com.sas.ims.entity.OrganisationHierarchy;
+ import com.sas.ims.request.FilterRequest;
+ import com.sas.ims.utils.DateTimeUtil;
+ import com.sas.ims.utils.ObjectMapperUtil;
++import com.sas.tokenlib.response.Response;
+ import com.sas.tokenlib.service.UserCredentialService;
+ import com.sas.tokenlib.utils.UserSession;
++import lombok.AllArgsConstructor;
+ import lombok.extern.slf4j.Slf4j;
+ import org.springframework.data.domain.Page;
+ import org.springframework.data.domain.PageRequest;
+@@ -33,91 +36,90 @@
+ 
+ @Slf4j
+ @Service
+-public class BranchServiceImpl implements BranchService, Constant {
+-    private UserCredentialService userCredentialService;
++@AllArgsConstructor
++public class AreaServiceImpl implements AreaService, Constant {
++    private final UserCredentialService userCredentialService;
+ 
+-    private BranchMasterRepository branchMasterRepository;
++    private final AreaMasterRepository areaMasterRepository;
+ 
+-    private OrganisationHierarchyRepository hierarchyRepository;
++    private final OrganisationHierarchyRepository hierarchyRepository;
+ 
+     @Override
+-    public Response getBranchDetail(Long branchId) throws ObjectNotFoundException {
++    public Response getAreaDetail(Long branchId) throws ObjectNotFoundException {
+         UserSession userSession = userCredentialService.getUserSession();
+-        BranchMaster branchMaster = branchMasterRepository.findByBranchIdAndOrgId(branchId, userSession.getCompany().getCompanyId()).orElseThrow(() -> new ObjectNotFoundException("Invalid Branch Id.", HttpStatus.NOT_FOUND));
+-        BranchMasterDto branchMasterDto = new BranchMasterDto();
+-        ObjectMapperUtil.map(branchMaster, branchMasterDto);
+-        branchMasterDto.setCreatedOn(DateTimeUtil.dateTimeToString(branchMaster.getInsertedOn()));
+-        branchMasterDto.setModifiedOn(DateTimeUtil.dateTimeToString(branchMaster.getUpdatedOn()));
+-        return new Response(SUCCESS, branchMasterDto, HttpStatus.OK);
++        AreaMaster areaMaster = areaMasterRepository.findByAreaIdAndOrgId(branchId, userSession.getCompany().getCompanyId()).orElseThrow(() -> new ObjectNotFoundException("Invalid Area Id", HttpStatus.NOT_FOUND));
++        AreaMasterDto areaMasterDto = new AreaMasterDto();
++        ObjectMapperUtil.map(areaMaster, areaMasterDto);
++        areaMasterDto.setCreatedOn(DateTimeUtil.dateTimeToString(areaMaster.getInsertedOn()));
++        areaMasterDto.setModifiedOn(DateTimeUtil.dateTimeToString(areaMaster.getUpdatedOn()));
++        return new Response(SUCCESS, areaMasterDto, HttpStatus.OK);
+     }
+ 
+     @Override
+-    public Response getBranchDetailList(FilterRequest filterRequest) throws BadRequestException {
+-        Pageable pageable = PageRequest.of(filterRequest.getStart(), filterRequest.getLimit(), Sort.by("branchId").descending());
+-        List<BranchMaster> branchMasterList = filteredData(specification(filterRequest), pageable);
+-        List<BranchMasterDto> branchMasterDtos = new ArrayList<>();
+-        if (!CollectionUtils.isEmpty(branchMasterList)) {
+-            for (BranchMaster branchMaster : branchMasterList) {
+-                BranchMasterDto branchMasterDto = new BranchMasterDto();
+-                ObjectMapperUtil.map(branchMaster, branchMasterDto);
+-                branchMasterDto.setCreatedOn(DateTimeUtil.dateTimeToString(branchMaster.getInsertedOn()));
+-                branchMasterDto.setModifiedOn(DateTimeUtil.dateTimeToString(branchMaster.getUpdatedOn()));
+-                branchMasterDtos.add(branchMasterDto);
+-            }
+-        } else {
+-            throw new BadRequestException(NOT_FOUND, HttpStatus.BAD_REQUEST);
++    public Response getAreaDetailList(FilterRequest filterRequest) throws BadRequestException {
++        UserSession userSession = userCredentialService.getUserSession();
++        if (!StringUtils.hasText(String.valueOf(filterRequest.getPage()))
++                || !StringUtils.hasText(String.valueOf(filterRequest.getSize()))
++                || !StringUtils.hasText(filterRequest.getAreaType())) {
++            throw new BadRequestException("Invalid Request", HttpStatus.BAD_REQUEST);
+         }
+-        return new Response(SUCCESS, branchMasterDtos, HttpStatus.OK);
+-
+-    }
+-
+-    public List<BranchMaster> filteredData(Specification<BranchMaster> spec, Pageable pageable) {
+-        Page<BranchMaster> pageData = branchMasterRepository.findAll(spec, pageable);
+-        List<BranchMaster> filteredData = pageData.getContent();
+-        return filteredData;
++        List<AreaMaster> areaMasterList = areaMasterRepository.findAllByAreaTypeAndOrgIdAndStatus(filterRequest.getAreaType(), userSession.getCompany().getCompanyId(), "A", PageRequest.of(filterRequest.getPage(), filterRequest.getSize())).getContent();
++        List<AreaMasterDto> areaMasterDtos = new ArrayList<>();
++        for (AreaMaster areaMaster : areaMasterList) {
++            AreaMasterDto areaMasterDto = new AreaMasterDto();
++            ObjectMapperUtil.map(areaMaster, areaMasterDto);
++            areaMasterDto.setCreatedOn(DateTimeUtil.dateTimeToString(areaMaster.getInsertedOn()));
++            areaMasterDto.setModifiedOn(DateTimeUtil.dateTimeToString(areaMaster.getUpdatedOn()));
++            areaMasterDtos.add(areaMasterDto);
++        }
++        return new Response(SUCCESS, areaMasterDtos, HttpStatus.OK);
+     }
+-
+-    public static Specification<BranchMaster> specification(FilterRequest filterRequest) {
+-        return (root, query, criteriaBuilder) -> {
+-            Predicate predicate = null;
+-            if (filterRequest.getBranchId() != null) {
+-                predicate = criteriaBuilder.equal(root.get("branchId"), filterRequest.getBranchId());
+-            }
+-            return predicate;
+-        };
+-    }
+ 
+     @Override
+-    public Response addBranch(BranchMasterDto branchMasterDto) throws ObjectNotFoundException, BadRequestException {
++    public Response addArea(AreaMasterDto areaMasterDto) throws ObjectNotFoundException, BadRequestException {
++        UserSession userSession = userCredentialService.getUserSession();
++
+         Response response = new Response();
+-        validateRequest(branchMasterDto);
+-        Long parentId = null;
+-        List<OrganisationHierarchy> organisationHierarchyList = hierarchyRepository.findByOrgIdAndHierarchyTypeOrderByHierarchySequenceAsc(Long.valueOf("1"), "GEO").orElseThrow(() -> new ObjectNotFoundException("Invalid Type.", HttpStatus.NOT_FOUND));      // get parent id using organisation hierarchy
+-        if (organisationHierarchyList == null) {
+-            throw new BadRequestException(NOT_FOUND, HttpStatus.BAD_REQUEST);
+-        }
+-        if (branchMasterRepository.existsByBranchCode(branchMasterDto.getBranchCode())) {
++        validateRequest(areaMasterDto);
++
++        if (areaMasterRepository.existsByOrgIdAndAreaName(userSession.getCompany().getCompanyId(), areaMasterDto.getAreaName())) {
+             response.setCode(HttpStatus.BAD_REQUEST.value());
+-            response.setMessage("This Branch already exists.");
++            response.setMessage("This Area already exists.");
+             response.setStatus(HttpStatus.BAD_REQUEST);
+         } else {
+-            BranchMaster branch = new BranchMaster();
+-            ObjectMapperUtil.map(branchMasterDto, branch);
+-            branch.setInsertedBy("");
+-            branchMasterDto.setParentId(getParentId(branchMasterDto, parentId, organisationHierarchyList));
+-            branch.setInsertedOn(LocalDateTime.now());
+-            branch = branchMasterRepository.save(branch);
++            Optional<List<OrganisationHierarchy>> organisationHierarchyList = hierarchyRepository.findByOrgIdAndHierarchyTypeOrderByHierarchySequenceAsc(userSession.getCompany().getCompanyId(), "GEO");
++            if (organisationHierarchyList.isEmpty()) {
++                log.info("No organisation hierarchy found while creating area: {}", areaMasterDto.getAreaName());
++                throw new BadRequestException(NOT_FOUND, HttpStatus.BAD_REQUEST);
++            }
++            Long latestSequence = areaMasterRepository.findLatestSequence();
++
++            AreaMaster area = new AreaMaster();
++            ObjectMapperUtil.map(areaMasterDto, area);
++            area.setAreaId(latestSequence);
++            area.setOrgId(userSession.getCompany().getCompanyId());
++            area.setStatus("A");
++            area.setAreaCode(areaMasterDto.getAreaType() + "_" + latestSequence);
++            area.setInsertedBy(userSession.getSub());
++            area.setInsertedOn(LocalDateTime.now());
++
++//            //Find parent ID
++//            Optional<OrganisationHierarchy> hierarchy = organisationHierarchyList.get().stream().filter(v -> v.getHierarchyCode().equals(areaMasterDto.getAreaCode())).findFirst();
++
++
++//            areaMasterDto.setParentId(getParentId(areaMasterDto, parentId, organisationHierarchyList));
++            area = areaMasterRepository.save(area);
+             response.setCode(HttpStatus.OK.value());
+             response.setStatus(HttpStatus.OK);
+-            response.setMessage("Branch saved successfully with Branch Id :" + " " + branch.getBranchId());
++            response.setMessage("Area saved successfully with Area Id :" + " " + area.getAreaId());
+         }
+         return response;
+     }
+ 
+-    private static Long getParentId(BranchMasterDto branchMasterDto, Long parentId, List<OrganisationHierarchy> organisationHierarchyList) {
++    private static Long getParentId(AreaMasterDto areaMasterDto, Long parentId, List<OrganisationHierarchy> organisationHierarchyList) {
+         Map<String, Long> organisationHierarchyMap = organisationHierarchyList.stream().collect(Collectors.toMap(OrganisationHierarchy::getHierarchyName, c -> c.getHierarchySequence()));
+-        if (organisationHierarchyMap.get(branchMasterDto.getBranchName()) != null) {
+-            Long value = organisationHierarchyMap.get(branchMasterDto.getBranchName());
++        if (organisationHierarchyMap.get(areaMasterDto.getAreaName()) != null) {
++            Long value = organisationHierarchyMap.get(areaMasterDto.getAreaName());
+             for (Map.Entry<String, Long> entry : organisationHierarchyMap.entrySet()) {
+                 if (entry.getValue().equals(value + 1)) {
+                     parentId = entry.getValue();
+@@ -129,19 +131,121 @@
+ 
+     }
+ 
+-    private void validateRequest(BranchMasterDto request) throws BadRequestException {
+-        if (request == null || StringUtils.hasText(request.getBranchName())) {
++    private void validateRequest(AreaMasterDto request) throws BadRequestException {
++        if (request == null || !StringUtils.hasText(request.getAreaName()) || !StringUtils.hasText(request.getAreaType())) {
+             throw new BadRequestException(INVALID_REQUEST, HttpStatus.BAD_REQUEST);
+         }
+     }
+ 
+ 
+     @Override
+-    public Response updateBranch(BranchMasterDto branchMasterDto) throws ObjectNotFoundException {
++    public Response updateArea(AreaMasterDto areaMasterDto) throws ObjectNotFoundException, BadRequestException {
++        if(StringUtils.hasText(String.valueOf(areaMasterDto.getAreaId()))){
++            throw new BadRequestException("Invalid Request", HttpStatus.BAD_REQUEST);
++        }
+         UserSession userSession = userCredentialService.getUserSession();
+-        BranchMaster branchMaster = branchMasterRepository.findByBranchIdAndOrgId(branchMasterDto.getBranchId(), userSession.getCompany().getCompanyId()).orElseThrow(() -> new ObjectNotFoundException("Branch does not exist.", HttpStatus.NOT_FOUND));
+-//        branchMasterDto.mapDtoToEntityForBranchUpdate(branchMasterDto, branchMaster, userSession);
+-        branchMasterRepository.save(branchMaster);
++        AreaMaster areaMaster = areaMasterRepository.findByAreaIdAndOrgId(areaMasterDto.getAreaId(), userSession.getCompany().getCompanyId()).orElseThrow(() -> new ObjectNotFoundException("Branch does not exist.", HttpStatus.NOT_FOUND));
++        ObjectMapperUtil.map(areaMasterDto, areaMaster);
++        areaMasterRepository.save(areaMaster);
+         return new Response("Branch updated successfully", HttpStatus.OK);
+     }
++
++    @Override
++    public Response getAreaTypeMap() throws InternalServerErrorException {
++        UserSession userSession = userCredentialService.getUserSession();
++        try {
++            List<ServerSideDropDownDto> serverSideDropDownDtoList = new ArrayList<>();
++            //Fetch hierarchy details by ORG ID
++            Optional<List<OrganisationHierarchy>> organisationHierarchies = hierarchyRepository.findByOrgIdAndHierarchyTypeAndStatusOrderByHierarchySequenceAsc(userSession.getCompany().getCompanyId(), "GEO", "A");
++            if (organisationHierarchies.isPresent()) {
++                organisationHierarchies.get().forEach(organisationHierarchy -> {
++                    ServerSideDropDownDto serverSideDropDownDto = new ServerSideDropDownDto();
++                    serverSideDropDownDto.setId(organisationHierarchy.getHierarchyCode());
++                    serverSideDropDownDto.setLabel(organisationHierarchy.getHierarchyName());
++                    serverSideDropDownDtoList.add(serverSideDropDownDto);
++                });
++                return new Response(SUCCESS, serverSideDropDownDtoList, HttpStatus.OK);
++            } else {
++                throw new ObjectNotFoundException("No area type found!", HttpStatus.NOT_FOUND);
++            }
++        } catch (Exception exception) {
++            log.error("Exception occurred while preparing Area Type Map , message : {}", exception.getMessage(), exception);
++            throw new InternalServerErrorException("Exception occurred while preparing Area Type Map", HttpStatus.NOT_FOUND);
++        }
++    }
++
++    @Override
++    public Response parentAreaCodeMap(String areaType) throws InternalServerErrorException {
++        UserSession userSession = userCredentialService.getUserSession();
++        try {
++            List<AreaMaster> areaMasterList;
++            switch (areaType) {
++                case "BR": {
++                    areaMasterList = areaMasterRepository.findAllByOrgIdAndAreaType(userSession.getCompany().getCompanyId(), "CL");
++                    return new Response(SUCCESS, entityToDtoList(areaMasterList), HttpStatus.OK);
++                }
++                case "CL": {
++                    areaMasterList = areaMasterRepository.findAllByOrgIdAndAreaType(userSession.getCompany().getCompanyId(), "DV");
++                    return new Response(SUCCESS, entityToDtoList(areaMasterList), HttpStatus.OK);
++
++                }
++                case "DV": {
++                    areaMasterList = areaMasterRepository.findAllByOrgIdAndAreaType(userSession.getCompany().getCompanyId(), "RG");
++                    return new Response(SUCCESS, entityToDtoList(areaMasterList), HttpStatus.OK);
++
++                }
++                case "RG": {
++                    areaMasterList = areaMasterRepository.findAllByOrgIdAndAreaType(userSession.getCompany().getCompanyId(), "ST");
++                    return new Response(SUCCESS, entityToDtoList(areaMasterList), HttpStatus.OK);
++                }
++                case "ST": {
++                    areaMasterList = areaMasterRepository.findAllByOrgIdAndAreaType(userSession.getCompany().getCompanyId(), "ZO");
++                    return new Response(SUCCESS, entityToDtoList(areaMasterList), HttpStatus.OK);
++                }
++                case "ZO": {
++                    areaMasterList = areaMasterRepository.findAllByOrgIdAndAreaType(userSession.getCompany().getCompanyId(), "HO");
++                    return new Response(SUCCESS, entityToDtoList(areaMasterList), HttpStatus.OK);
++                }
++                default:
++                    throw new IllegalStateException("Unexpected value: " + areaType);
++            }
++        } catch (Exception ex) {
++            log.error("Exception occurred while preparing Parent Area Code Map , message : {}", ex.getMessage(), ex);
++            throw new InternalServerErrorException("Exception occurred while preparing Parent Area Code Map", HttpStatus.INTERNAL_SERVER_ERROR);
++        }
++    }
++
++    @Override
++    public Response areaCodeMap(String areaType) throws InternalServerErrorException {
++        try {
++            UserSession userSession = userCredentialService.getUserSession();
++            List<ServerSideDropDownDto> serverSideDropDownDtoList = new ArrayList<>();
++            List<AreaMaster> areaMasterList = areaMasterRepository.findAllByOrgIdAndAreaType(userSession.getCompany().getCompanyId(), areaType);
++            for (AreaMaster areaMaster : areaMasterList) {
++                ServerSideDropDownDto serverSideDropDownDto = new ServerSideDropDownDto();
++                serverSideDropDownDto.setId(areaMaster.getAreaId().toString());
++                serverSideDropDownDto.setLabel(areaMaster.getAreaCode() + "-" + areaMaster.getAreaName());
++                serverSideDropDownDtoList.add(serverSideDropDownDto);
++            }
++            return new Response(SUCCESS, serverSideDropDownDtoList, HttpStatus.OK);
++        } catch (Exception ex) {
++            log.error("Exception occurred while preparing Area Code Map , message : {}", ex.getMessage(), ex);
++            throw new InternalServerErrorException("Exception occurred while preparing Area Code Map", HttpStatus.INTERNAL_SERVER_ERROR);
++        }
++    }
++
++    public List<ServerSideDropDownDto> entityToDtoList(List<AreaMaster> areaMasterList) {
++        if (CollectionUtils.isEmpty(areaMasterList))
++            return Collections.emptyList();
++        return areaMasterList.stream().map(o -> entityToDto(o)).collect(Collectors.toList());
++    }
++
++    public ServerSideDropDownDto entityToDto(AreaMaster areaMaster) {
++        if (areaMaster == null)
++            return null;
++        ServerSideDropDownDto serverSideDropDownDto = new ServerSideDropDownDto();
++        serverSideDropDownDto.setId(areaMaster.getAreaId().toString());
++        serverSideDropDownDto.setLabel(areaMaster.getAreaCode() + "-" + areaMaster.getAreaName());
++        return serverSideDropDownDto;
++    }
+ }
+Index: ims/src/main/java/com/sas/ims/repository/BranchMasterRepository.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ims/src/main/java/com/sas/ims/repository/BranchMasterRepository.java b/ims/src/main/java/com/sas/ims/repository/AreaMasterRepository.java
+rename from ims/src/main/java/com/sas/ims/repository/BranchMasterRepository.java
+rename to ims/src/main/java/com/sas/ims/repository/AreaMasterRepository.java
+--- a/ims/src/main/java/com/sas/ims/repository/BranchMasterRepository.java	(revision 69032cc5cdf8eac66f71a20b8b827bb147d70491)
++++ b/ims/src/main/java/com/sas/ims/repository/AreaMasterRepository.java	(date 1681939214182)
+@@ -1,25 +1,32 @@
+ package com.sas.ims.repository;
+ 
+-import com.sas.ims.entity.BranchMaster;
++import com.sas.ims.entity.AreaMaster;
+ import org.springframework.data.domain.Page;
+ import org.springframework.data.domain.Pageable;
+ import org.springframework.data.jpa.domain.Specification;
+ import org.springframework.data.jpa.repository.JpaRepository;
++import org.springframework.data.jpa.repository.Query;
+ import org.springframework.stereotype.Repository;
+ 
++import java.util.List;
+ import java.util.Optional;
+ 
+ @Repository
+-public interface BranchMasterRepository extends JpaRepository<BranchMaster, Long> {
++public interface AreaMasterRepository extends JpaRepository<AreaMaster, Long> {
++    Optional<AreaMaster> findByAreaIdAndOrgId(Long areaId, Long orgId);
+ 
++    Optional<List<AreaMaster>> findAllByAreaIdAndOrgId(Long areaId, Long orgId);
+ 
++    Optional<AreaMaster> findByAreaTypeAndOrgIdAndStatus(String areaType, Long orgId, String status);
+ 
+-    Optional<BranchMaster> findByBranchIdAndOrgId(Long branchId, Long orgId);
++    Page<AreaMaster> findAllByAreaTypeAndOrgIdAndStatus(String areaType, Long orgId, String status, Pageable pageable);
+ 
++    Page<AreaMaster> findAll(Specification<AreaMaster> spec, Pageable pageable);
+ 
++    boolean existsByOrgIdAndAreaName(Long orgId, String areaName);
+ 
++    List<AreaMaster> findAllByOrgIdAndAreaType(Long companyId, String areaType);
+ 
+-    Page<BranchMaster> findAll(Specification<BranchMaster> spec, Pageable pageable);
+-
+-    boolean existsByBranchCode(String branchCode);
++    @Query(value = "select nextval('area_master_area_id_seq')", nativeQuery = true)
++    Long findLatestSequence();
+ }
+Index: ims/src/main/java/com/sas/ims/dto/BranchMasterDto.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ims/src/main/java/com/sas/ims/dto/BranchMasterDto.java b/ims/src/main/java/com/sas/ims/dto/AreaMasterDto.java
+rename from ims/src/main/java/com/sas/ims/dto/BranchMasterDto.java
+rename to ims/src/main/java/com/sas/ims/dto/AreaMasterDto.java
+--- a/ims/src/main/java/com/sas/ims/dto/BranchMasterDto.java	(revision 69032cc5cdf8eac66f71a20b8b827bb147d70491)
++++ b/ims/src/main/java/com/sas/ims/dto/AreaMasterDto.java	(date 1681939484044)
+@@ -4,31 +4,28 @@
+ import lombok.NoArgsConstructor;
+ import lombok.Setter;
+ 
+-import javax.persistence.Column;
+-import javax.persistence.GeneratedValue;
+-import javax.persistence.GenerationType;
+-import javax.persistence.Id;
+ import java.time.LocalDateTime;
+ 
+ @Getter
+ @Setter
+ @NoArgsConstructor
+-public class BranchMasterDto {
++public class AreaMasterDto {
+ 
+-    private Long branchId;
++    private Long areaId;
++
+     private Long orgId;
+ 
+-    private String branchType;
++    private String areaType;
+ 
+     private Long parentId;
+ 
+-    private String branchCode;
++    private String areaCode;
+ 
+-    private String branchName;
++    private String areaName;
+ 
+-    private LocalDateTime branchOpeningDate;
++    private String areaOpeningDate;
+ 
+-    private LocalDateTime branchClosingDate;
++    private String areaClosingDate;
+ 
+     private String status;
+ 
+@@ -46,9 +43,10 @@
+ 
+     private String emailId;
+ 
+-    private String partnerReffrenceCode;
++    private String partnerReferenceCode;
+ 
+     private String createdOn;
++
+     private String modifiedOn;
+ 
+ }
+Index: ims/src/main/java/com/sas/ims/controller/BranchController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ims/src/main/java/com/sas/ims/controller/BranchController.java b/ims/src/main/java/com/sas/ims/controller/AreaController.java
+rename from ims/src/main/java/com/sas/ims/controller/BranchController.java
+rename to ims/src/main/java/com/sas/ims/controller/AreaController.java
+--- a/ims/src/main/java/com/sas/ims/controller/BranchController.java	(revision 69032cc5cdf8eac66f71a20b8b827bb147d70491)
++++ b/ims/src/main/java/com/sas/ims/controller/AreaController.java	(date 1681940612719)
+@@ -1,41 +1,61 @@
+ package com.sas.ims.controller;
+ 
+ import com.sas.ims.exception.BadRequestException;
+-import com.sas.ims.dto.BranchMasterDto;
++import com.sas.ims.dto.AreaMasterDto;
++import com.sas.ims.exception.InternalServerErrorException;
+ import com.sas.ims.exception.ObjectNotFoundException;
+ import com.sas.ims.request.FilterRequest;
+-import com.sas.ims.response.Response;
+-import com.sas.ims.service.BranchService;
++import com.sas.ims.service.AreaService;
++import com.sas.tokenlib.response.Response;
++import lombok.extern.slf4j.Slf4j;
+ import org.springframework.beans.factory.annotation.Autowired;
+ import org.springframework.web.bind.annotation.*;
+ 
+ @RestController
+-@RequestMapping(value = "/api/branch")
++@RequestMapping(value = "/api/area")
+ @CrossOrigin(origins = "*")
+-public class BranchController {
++@Slf4j
++public class AreaController {
+ 
+     @Autowired
+-    private BranchService branchService;
++    private AreaService areaService;
+ 
+-
+-    @GetMapping(value = "/{branchId}")
+-    public Response getBranchDetail(@PathVariable Long branchId) throws ObjectNotFoundException {
+-        return branchService.getBranchDetail(branchId);
++    @GetMapping(value = "/{areaId}")
++    public Response getAreaDetail(@PathVariable Long areaId) throws ObjectNotFoundException {
++        return areaService.getAreaDetail(areaId);
+     }
+ 
+     @PostMapping("/list")
+-    public Response getBranchDetailList(@RequestBody FilterRequest filterRequest) throws BadRequestException, ObjectNotFoundException {
+-        return branchService.getBranchDetailList(filterRequest);
++    public Response getAreaDetailList(@RequestBody FilterRequest filterRequest) throws BadRequestException, ObjectNotFoundException {
++        return areaService.getAreaDetailList(filterRequest);
++    }
++
++    @PostMapping("/add")
++    public Response addArea(@RequestBody AreaMasterDto areaMasterDto) throws ObjectNotFoundException, BadRequestException {
++        log.info("Request received to add area");
++        return areaService.addArea(areaMasterDto);
++    }
++
++    @PostMapping("/update")
++    public Response updateBranch(@RequestBody AreaMasterDto areaMasterDto) throws ObjectNotFoundException, BadRequestException {
++        return areaService.updateArea(areaMasterDto);
+     }
+ 
+-    @PostMapping("/addBranch")
+-    public Response addBranch(@RequestBody BranchMasterDto branchMasterDto) throws ObjectNotFoundException, BadRequestException {
+-        return branchService.addBranch(branchMasterDto);
++    @GetMapping("/areaTypeMap")
++    public Response getAreaTypeMap() throws ObjectNotFoundException, InternalServerErrorException {
++        return areaService.getAreaTypeMap();
+     }
+ 
+-    @PostMapping("/updateBranch")
+-    public Response updateBranch(@RequestBody BranchMasterDto branchMasterDto) throws ObjectNotFoundException {
+-        return branchService.updateBranch(branchMasterDto);
++    @GetMapping("/parentAreaCodeMap/{areaType}")
++    public Response parentAreaCodeMap(@PathVariable String areaType) throws InternalServerErrorException {
++        log.info("Request initiated for Parent Area Code Map by area type : {}", areaType);
++        return areaService.parentAreaCodeMap(areaType);
++    }
++
++    @GetMapping("/areaCodeMap/{areaType}")
++    public Response areaCodeMap(@PathVariable String areaType) throws InternalServerErrorException {
++        log.info("Request initiated for Area Code Map by branch type : {}", areaType);
++        return areaService.areaCodeMap(areaType);
+     }
+ 
+ }
+Index: ims/src/main/java/com/sas/ims/entity/BranchMaster.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ims/src/main/java/com/sas/ims/entity/BranchMaster.java b/ims/src/main/java/com/sas/ims/entity/AreaMaster.java
+rename from ims/src/main/java/com/sas/ims/entity/BranchMaster.java
+rename to ims/src/main/java/com/sas/ims/entity/AreaMaster.java
+--- a/ims/src/main/java/com/sas/ims/entity/BranchMaster.java	(revision 69032cc5cdf8eac66f71a20b8b827bb147d70491)
++++ b/ims/src/main/java/com/sas/ims/entity/AreaMaster.java	(date 1681938681130)
+@@ -9,40 +9,39 @@
+ import java.time.LocalDateTime;
+ 
+ @Entity
+-@Table(name = "BRANCH_MASTER")
++@Table(name = "AREA_MASTER")
+ @Data
+-public class BranchMaster extends BaseEntity implements Serializable {
+-    private static final long serialVersionUID = 9182562580678493055L;
++public class AreaMaster extends BaseEntity implements Serializable {
++    private static final long serialVersionUID = -6310813846153493716L;
+     @Id
+-    @GeneratedValue(strategy = GenerationType.AUTO)
+-    @Column(name = "BRANCH_ID")
+-    private Long branchId;
++    @GeneratedValue(strategy = GenerationType.IDENTITY)
++    @Column(name = "AREA_ID")
++    private Long areaId;
++
+     @Column(name = "ORG_ID")
+     private Long orgId;
+ 
+-    @Column(name = "BRANCH_TYPE")
+-    private String branchType;
++    @Column(name = "AREA_TYPE")
++    private String areaType;
+ 
+     @Column(name = "PARENT_ID")
+-    private Integer parent_id;
++    private Integer parentId;
+ 
+-    @Column(name = "BRANCH_CODE")
+-    private String branchCode;
++    @Column(name = "AREA_CODE")
++    private String areaCode;
+ 
+-    @Column(name = "BRANCH_NAME")
+-    private String branchName;
++    @Column(name = "AREA_NAME")
++    private String areaName;
+ 
+-    @Column(name = "BRANCH_OPENING_DATE")
+-    private LocalDateTime branchOpeningDate;
++    @Column(name = "AREA_OPENING_DATE")
++    private LocalDateTime areaOpeningDate;
+ 
+-    @Column(name = "BRANCH_CLOSING_DATE")
+-    private LocalDateTime branchClosingDate;
++    @Column(name = "AREA_CLOSING_DATE")
++    private LocalDateTime areaClosingDate;
+ 
+     @Column(name = "STATUS")
+     private String status;
+ 
+-    @Column(name = "ADDRESS", nullable = false)
+-    private String ADDRESS;
+     @Column(name = "ADDRESS_1")
+     private String address1;
+ 
+@@ -64,14 +63,10 @@
+     @Column(name = "EMAIL_ID")
+     private String emailId;
+ 
+-    @Column(name = "PARTNER_REFFERENCE_CODE")
+-    private String partnerRefferenceCode;
++    @Column(name = "PARTNER_REFERENCE_CODE")
++    private String partnerReferenceCode;
+ 
+-    @Column(name = "BRANCH_MANAGER_ID")
+-    private String branchManagerId;
+-
+-    //COMMA SEPERATED
+-    @Column(name = "APPROVAL_AUTHORITY", nullable = false)
+-    private String approvalAuthority;
++    @Column(name = "AREA_MANAGER_ID")
++    private String areaManagerId;
+ 
+ }
+Index: ims/src/main/java/com/sas/ims/response/LoginResponse.java
+===================================================================
+diff --git a/ims/src/main/java/com/sas/ims/response/LoginResponse.java b/ims/src/main/java/com/sas/ims/response/LoginResponse.java
+deleted file mode 100644
+--- a/ims/src/main/java/com/sas/ims/response/LoginResponse.java	(revision 69032cc5cdf8eac66f71a20b8b827bb147d70491)
++++ /dev/null	(revision 69032cc5cdf8eac66f71a20b8b827bb147d70491)
+@@ -1,15 +0,0 @@
+-package com.sas.ims.response;
+-
+-import lombok.AllArgsConstructor;
+-import lombok.Builder;
+-import lombok.Data;
+-import lombok.NoArgsConstructor;
+-
+-@Data
+-@Builder
+-@AllArgsConstructor
+-@NoArgsConstructor
+-public class LoginResponse {
+-
+-    private String token;
+-}
+Index: ims/src/main/java/com/sas/ims/response/Response.java
+===================================================================
+diff --git a/ims/src/main/java/com/sas/ims/response/Response.java b/ims/src/main/java/com/sas/ims/response/Response.java
+deleted file mode 100644
+--- a/ims/src/main/java/com/sas/ims/response/Response.java	(revision 69032cc5cdf8eac66f71a20b8b827bb147d70491)
++++ /dev/null	(revision 69032cc5cdf8eac66f71a20b8b827bb147d70491)
+@@ -1,41 +0,0 @@
+-package com.sas.ims.response;
+-
+-import lombok.AllArgsConstructor;
+-import lombok.Builder;
+-import lombok.Data;
+-import lombok.NoArgsConstructor;
+-import org.springframework.http.HttpStatus;
+-
+-@Data
+-@NoArgsConstructor
+-@Builder
+-@AllArgsConstructor
+-public class Response {
+-
+-	private int code;
+-	private String message;
+-	private HttpStatus status;
+-	private Object data;
+-	private Long count;
+-
+-	public Response(String message, HttpStatus status) {
+-		this.message = message;
+-		this.status = status;
+-		this.code = status.value();
+-	}
+-
+-	public Response(String message, Object data, HttpStatus status) {
+-		this.message = message;
+-		this.status = status;
+-		this.code = status.value();
+-		this.data = data;
+-	}
+-	public Response(String message, Object data, HttpStatus status, Long count) {
+-		this.message = message;
+-		this.status = status;
+-		this.code = status.value();
+-		this.data = data;
+-		this.count = count;
+-	}
+-
+-}
+Index: ims/src/main/java/com/sas/ims/dto/ServerSideDropDownDto.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ims/src/main/java/com/sas/ims/dto/ServerSideDropDownDto.java b/ims/src/main/java/com/sas/ims/dto/ServerSideDropDownDto.java
+new file mode 100644
+--- /dev/null	(date 1681802289401)
++++ b/ims/src/main/java/com/sas/ims/dto/ServerSideDropDownDto.java	(date 1681802289401)
+@@ -0,0 +1,13 @@
++package com.sas.ims.dto;
++
++import com.fasterxml.jackson.annotation.JsonInclude;
++import lombok.Getter;
++import lombok.Setter;
++
++@Getter
++@Setter
++@JsonInclude(JsonInclude.Include.NON_NULL)
++public class ServerSideDropDownDto {
++    private String id;
++    private String label;
++}
+\ No newline at end of file
+Index: ims/src/main/java/com/sas/ims/service/VendorService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.sas.ims.service;\r\n\r\nimport com.sas.ims.dto.VendorDto;\r\nimport com.sas.ims.exception.BadRequestException;\r\nimport com.sas.ims.response.Response;\r\n\r\npublic interface VendorService {\r\n    Response getVendorById(Long vendorId);\r\n\r\n    Response getVendorList(Integer page, Integer size);\r\n\r\n    Response saveVendor(VendorDto vendorDto);\r\n\r\n    Response updateVendor(VendorDto vendorDto) throws BadRequestException;\r\n\r\n    Response removeVendor(Long vendorId);\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ims/src/main/java/com/sas/ims/service/VendorService.java b/ims/src/main/java/com/sas/ims/service/VendorService.java
+--- a/ims/src/main/java/com/sas/ims/service/VendorService.java	(revision 69032cc5cdf8eac66f71a20b8b827bb147d70491)
++++ b/ims/src/main/java/com/sas/ims/service/VendorService.java	(date 1681815413872)
+@@ -2,7 +2,7 @@
+ 
+ import com.sas.ims.dto.VendorDto;
+ import com.sas.ims.exception.BadRequestException;
+-import com.sas.ims.response.Response;
++import com.sas.tokenlib.response.Response;
+ 
+ public interface VendorService {
+     Response getVendorById(Long vendorId);
+Index: ims/src/main/java/com/sas/ims/service/BranchService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ims/src/main/java/com/sas/ims/service/BranchService.java b/ims/src/main/java/com/sas/ims/service/AreaService.java
+rename from ims/src/main/java/com/sas/ims/service/BranchService.java
+rename to ims/src/main/java/com/sas/ims/service/AreaService.java
+--- a/ims/src/main/java/com/sas/ims/service/BranchService.java	(revision 69032cc5cdf8eac66f71a20b8b827bb147d70491)
++++ b/ims/src/main/java/com/sas/ims/service/AreaService.java	(date 1681940612735)
+@@ -1,17 +1,24 @@
+ package com.sas.ims.service;
+ 
+ import com.sas.ims.exception.BadRequestException;
++import com.sas.ims.exception.InternalServerErrorException;
+ import com.sas.ims.exception.ObjectNotFoundException;
+-import com.sas.ims.dto.BranchMasterDto;
++import com.sas.ims.dto.AreaMasterDto;
+ import com.sas.ims.request.FilterRequest;
+-import com.sas.ims.response.Response;
++import com.sas.tokenlib.response.Response;
++
++public interface AreaService {
++    Response getAreaDetail(Long branchId) throws ObjectNotFoundException;
+ 
+-public interface BranchService {
+-    Response getBranchDetail(Long branchId) throws ObjectNotFoundException;
++    Response getAreaDetailList(FilterRequest filterRequest) throws BadRequestException;
+ 
+-    Response getBranchDetailList(FilterRequest filterRequest) throws BadRequestException;
++    Response addArea(AreaMasterDto areaMasterDto) throws ObjectNotFoundException, BadRequestException;
+ 
+-    Response addBranch(BranchMasterDto branchMasterDto) throws ObjectNotFoundException, BadRequestException;
++    Response updateArea(AreaMasterDto areaMasterDto) throws ObjectNotFoundException, BadRequestException;
+ 
+-    Response updateBranch(BranchMasterDto branchMasterDto) throws ObjectNotFoundException;
++    Response getAreaTypeMap() throws ObjectNotFoundException, InternalServerErrorException;
++
++    Response parentAreaCodeMap(String areaType) throws InternalServerErrorException;
++
++    Response areaCodeMap(String areaType) throws InternalServerErrorException;
+ }
+Index: ims/src/main/java/com/sas/ims/service/serviceImpl/ReferenceServiceImpl.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ims/src/main/java/com/sas/ims/service/serviceImpl/ReferenceServiceImpl.java b/ims/src/main/java/com/sas/ims/service/serviceImpl/ReferenceServiceImpl.java
+new file mode 100644
+--- /dev/null	(date 1681802289393)
++++ b/ims/src/main/java/com/sas/ims/service/serviceImpl/ReferenceServiceImpl.java	(date 1681802289393)
+@@ -0,0 +1,223 @@
++package com.sas.ims.service.serviceImpl;
++
++import com.sas.ims.constant.Constant;
++import com.sas.ims.dto.ServerSideDropDownDto;
++import com.sas.ims.entity.ReferenceDetail;
++import com.sas.ims.entity.ReferenceDetailPK;
++import com.sas.ims.exception.ObjectNotFoundException;
++import com.sas.ims.repository.ReferenceDetailRepository;
++import com.sas.ims.request.ReferenceDetailDto;
++import com.sas.ims.request.ReferenceDomainRequest;
++import com.sas.ims.request.ReferenceRequest;
++import com.sas.ims.service.ReferenceService;
++import com.sas.tokenlib.response.Response;
++import com.sas.tokenlib.service.UserCredentialService;
++import lombok.AllArgsConstructor;
++import lombok.extern.slf4j.Slf4j;
++import org.springframework.beans.BeanUtils;
++import org.springframework.http.HttpStatus;
++import org.springframework.stereotype.Service;
++import org.springframework.util.CollectionUtils;
++import org.springframework.util.StringUtils;
++import java.time.LocalDateTime;
++import java.util.*;
++
++@Service
++@Slf4j
++@AllArgsConstructor
++public class ReferenceServiceImpl implements ReferenceService, Constant {
++
++    private final ReferenceDetailRepository referenceDetailRepository;
++
++    private final UserCredentialService userCredentialService;
++
++    @Override
++    public Response getReferenceByKey(String referenceKey) {
++        Response response = new Response();
++        List<ServerSideDropDownDto> serverSideDropDownDtoList = new ArrayList<>();
++        if (StringUtils.hasText(referenceKey)) {
++            List<String> domainList = referenceDetailRepository.findByReferenceDomain(referenceKey);
++            for (String domainName : domainList) {
++                ServerSideDropDownDto sideDropDownDto = new ServerSideDropDownDto();
++                sideDropDownDto.setId(domainName);
++                sideDropDownDto.setLabel(domainName);
++                serverSideDropDownDtoList.add(sideDropDownDto);
++            }
++            response.setCode(HttpStatus.OK.value());
++            response.setStatus(HttpStatus.OK);
++            response.setData(serverSideDropDownDtoList);
++            response.setMessage("Reference Domain List Fetch Successfully");
++        } else {
++            response.setCode(HttpStatus.BAD_REQUEST.value());
++            response.setStatus(HttpStatus.BAD_REQUEST);
++            response.setMessage("Invalid Request Parameters / Request Parameters Can't Be Null");
++        }
++        return response;
++    }
++
++    @Override
++    public Response findByReferenceDomain(String domain) throws ObjectNotFoundException {
++        List<ReferenceDetail> domainList = referenceDetailRepository.findByReferenceDetailPK_ReferenceDomainOrderByValue4(domain).orElseThrow((() -> new ObjectNotFoundException("Data Not Found.", HttpStatus.NOT_FOUND)));
++        List<ReferenceDetailDto> referenceDetailDtos = new ArrayList<>();
++        if (!CollectionUtils.isEmpty(domainList)) {
++            // set value in Dto
++            setValueInDTO(domainList, referenceDetailDtos);
++        }
++        return new Response(SUCCESS, referenceDetailDtos, HttpStatus.OK);
++    }
++
++    @Override
++    public Response addReferenceDetails(ReferenceRequest request) throws ObjectNotFoundException {
++        Response response = new Response();
++        if (!CollectionUtils.isEmpty(request.getReferenceDetailDto())) {
++            List<ReferenceDetail> referenceDetail = referenceDetailRepository.findByReferenceDetailPK_ReferenceDomainOrderByValue4(request.getReferenceDetailDto().get(0).getReferenceDomain()).orElseThrow((() -> new ObjectNotFoundException("Data Not Found.", HttpStatus.NOT_FOUND)));
++            if (!CollectionUtils.isEmpty(referenceDetail)) {
++                response.setCode(HttpStatus.BAD_REQUEST.value());
++                response.setStatus(HttpStatus.BAD_REQUEST);
++                response.setMessage("Reference Domain Already Present , Please Use Different Reference Domain");
++            } else {
++                saveNewReferencesDetails(request.getReferenceDetailDto());
++                response.setCode(HttpStatus.OK.value());
++                response.setStatus(HttpStatus.OK);
++                response.setMessage("Data Save Successfully");
++            }
++        } else {
++            response.setCode(HttpStatus.BAD_REQUEST.value());
++            response.setStatus(HttpStatus.BAD_REQUEST);
++            response.setMessage("Invalid Request Parameters / Request Parameters Can't Be Null");
++        }
++        return response;
++    }
++
++    private void saveNewReferencesDetails(List<ReferenceDetailDto> referenceDetailDto) {
++        List<ReferenceDetail> referenceDetails = new ArrayList<>();
++        for (ReferenceDetailDto reference : referenceDetailDto) {
++            ReferenceDetail referenceDetail = new ReferenceDetail();
++            ReferenceDetailPK referenceDetailPK = new ReferenceDetailPK();
++            referenceDetailPK.setReferenceDomain(reference.getReferenceDomain());
++            referenceDetailPK.setKeyValue(reference.getKeyValue());
++            referenceDetail.setReferenceDetailPK(referenceDetailPK);
++            referenceDetail.setDescription(reference.getDescription());
++            referenceDetail.setValue1(reference.getValue1());
++            referenceDetail.setValue2(reference.getValue2());
++            referenceDetail.setValue3(reference.getValue3());
++            referenceDetail.setValue4(reference.getValue4());
++            referenceDetail.setInsertedBy(userCredentialService.getUserSession().getSub());
++            referenceDetail.setInsertedOn(LocalDateTime.now());
++            referenceDetails.add(referenceDetail);
++        }
++        if (!CollectionUtils.isEmpty(referenceDetails)) {
++            referenceDetailRepository.saveAll(referenceDetails);
++        }
++    }
++
++    private void setValueInDTO(List<ReferenceDetail> domainList, List<ReferenceDetailDto> referenceDetailDtos) {
++        for (ReferenceDetail referenceDetail : domainList) {
++            ReferenceDetailDto referenceDetailDto = new ReferenceDetailDto();
++            referenceDetailDto.setReferenceDomain(referenceDetail.getReferenceDetailPK().getReferenceDomain());
++            referenceDetailDto.setKeyValue(referenceDetail.getReferenceDetailPK().getKeyValue());
++            referenceDetailDto.setDescription(referenceDetail.getDescription());
++            referenceDetailDto.setValue1(referenceDetail.getValue1());
++            referenceDetailDto.setValue2(referenceDetail.getValue2());
++            referenceDetailDto.setValue3(referenceDetail.getValue3());
++            referenceDetailDto.setValue4(referenceDetail.getValue4());
++            referenceDetailDtos.add(referenceDetailDto);
++        }
++    }
++
++    @Override
++    public Response updateReferenceDetail(ReferenceRequest request) throws ObjectNotFoundException {
++        Response response = new Response();
++        if (!CollectionUtils.isEmpty(request.getReferenceDetailDto())) {
++            log.info("Find Reference Details By Reference Domain {} ", request.getReferenceDetailDto().get(0).getReferenceDomain());
++            List<ReferenceDetail> dbReferenceDetailList = referenceDetailRepository.findByReferenceDetailPK_ReferenceDomainOrderByValue4(request.getReferenceDetailDto().get(0).getReferenceDomain()).orElseThrow((() -> new ObjectNotFoundException("Data Not Found.", HttpStatus.NOT_FOUND)));
++            if (!CollectionUtils.isEmpty(dbReferenceDetailList)) {
++                // logic to update / Add / Delete Reference Domain
++                updateReferenceDetails(request.getReferenceDetailDto(), dbReferenceDetailList);
++                response.setCode(HttpStatus.OK.value());
++                response.setStatus(HttpStatus.OK);
++                response.setMessage("Data Update Successfully ");
++            } else {
++                response.setCode(HttpStatus.BAD_REQUEST.value());
++                response.setStatus(HttpStatus.BAD_REQUEST);
++                response.setMessage("Invalid Domain Reference ");
++            }
++        } else {
++            response.setCode(HttpStatus.BAD_REQUEST.value());
++            response.setStatus(HttpStatus.BAD_REQUEST);
++            response.setMessage("Invalid Request Parameters / Request Parameters Can't Be Null");
++        }
++        return response;
++    }
++
++    private void updateReferenceDetails(List<ReferenceDetailDto> referenceDetailDto, List<ReferenceDetail> dbReferenceDetailList) {
++        Set<ReferenceDetail> toBeDeleted = new HashSet<>();
++        Set<ReferenceDetail> updateEntityList = new HashSet<>();
++        List<ReferenceDetailDto> updateListDTO = new ArrayList<>();
++        for (ReferenceDetail reference : dbReferenceDetailList) {
++            boolean isExist = false;
++            for (ReferenceDetailDto reqReferenceDto : referenceDetailDto) {
++                if (reference.getReferenceDetailPK().getKeyValue().equals(reqReferenceDto.getKeyValue())) {
++                    setReferenceDetailFromDTO(reference, reqReferenceDto);
++                    updateEntityList.add(reference);
++                    updateListDTO.add(reqReferenceDto);
++                    isExist = true;
++                    break;
++                }
++            }
++            if (!isExist) {
++                toBeDeleted.add(reference);
++            }
++        }
++        //Remove Common Elements from referenceDetailDto List
++        log.info("Remove Common Elements from referenceDetailDto List");
++        referenceDetailDto.removeAll(updateListDTO);
++        if (!CollectionUtils.isEmpty(updateEntityList)) {
++            log.info("Update Existing Reference Details");
++            referenceDetailRepository.saveAll(updateEntityList);
++        }
++        if (!CollectionUtils.isEmpty(toBeDeleted)) {
++            log.info("Deleted Reference Details Those Not Found in Reference Details DTO ");
++            referenceDetailRepository.deleteAll(toBeDeleted);
++        }
++        if (!CollectionUtils.isEmpty(referenceDetailDto)) {
++            log.info("Create New Reference Details");
++            saveNewReferencesDetails(referenceDetailDto);
++        }
++    }
++
++    private void setReferenceDetailFromDTO(ReferenceDetail reference, ReferenceDetailDto referenceDetailDto) {
++        ReferenceDetailPK referenceDetailPK = reference.getReferenceDetailPK();
++        referenceDetailPK.setKeyValue(referenceDetailDto.getKeyValue());
++        reference.setDescription(referenceDetailDto.getDescription());
++        reference.setValue1(referenceDetailDto.getValue1());
++        reference.setValue2(referenceDetailDto.getValue2());
++        reference.setValue3(referenceDetailDto.getValue3());
++        reference.setValue4(referenceDetailDto.getValue4());
++        reference.setUpdatedBy(userCredentialService.getUserSession().getSub());
++        reference.setUpdatedOn(LocalDateTime.now());
++
++    }
++
++    @Override
++    public Response getReferenceDetailsList(ReferenceDomainRequest referenceDomainRequest) {
++        List<ReferenceDetail> referenceDetailList = referenceDetailRepository.findByReferenceDetailPK_ReferenceDomainInOrderByValue4(referenceDomainRequest.getReferenceDomain());
++        Map<String, List<ReferenceDetailDto>> referenceMap = new HashMap<>();
++        for (ReferenceDetail referenceDetail : referenceDetailList) {
++            ReferenceDetailDto referenceDetailDto = new ReferenceDetailDto();
++            BeanUtils.copyProperties(referenceDetail, referenceDetailDto);
++            referenceDetailDto.setReferenceDomain(referenceDetail.getReferenceDetailPK().getReferenceDomain());
++            referenceDetailDto.setKeyValue(referenceDetail.getReferenceDetailPK().getKeyValue());
++            if (referenceMap.get(referenceDetailDto.getReferenceDomain()) != null) {
++                List<ReferenceDetailDto> list = referenceMap.get(referenceDetailDto.getReferenceDomain());
++                list.add(referenceDetailDto);
++                referenceMap.put(referenceDetailDto.getReferenceDomain(), list);
++            } else {
++                List<ReferenceDetailDto> list = new ArrayList<>();
++                list.add(referenceDetailDto);
++                referenceMap.put(referenceDetailDto.getReferenceDomain(), list);
++            }
++        }
++        return new Response(SUCCESS, referenceMap, HttpStatus.OK);
++    }
++}
+\ No newline at end of file
+Index: ims/src/main/java/com/sas/ims/service/ProductGroupService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.sas.ims.service;\r\n\r\nimport com.sas.ims.dto.ProductGroupDto;\r\nimport com.sas.ims.response.Response;\r\n\r\npublic interface ProductGroupService {\r\n\t\r\n\tResponse getActiveProductGroupDetails(ProductGroupDto dto);\r\n\t\r\n\tResponse addProductGroup(ProductGroupDto dto);\r\n\t\r\n\tResponse updateProductGroup(ProductGroupDto dto);\r\n\t\r\n\tResponse getProductGroupDetailsById(Long productGroupId);\r\n\t\r\n\tResponse softDeleteProductGroup(Long productGroupId);\r\n\t\r\n\tResponse getParentGroup();\r\n\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ims/src/main/java/com/sas/ims/service/ProductGroupService.java b/ims/src/main/java/com/sas/ims/service/ProductGroupService.java
+--- a/ims/src/main/java/com/sas/ims/service/ProductGroupService.java	(revision 69032cc5cdf8eac66f71a20b8b827bb147d70491)
++++ b/ims/src/main/java/com/sas/ims/service/ProductGroupService.java	(date 1681815413856)
+@@ -1,7 +1,7 @@
+ package com.sas.ims.service;
+ 
+ import com.sas.ims.dto.ProductGroupDto;
+-import com.sas.ims.response.Response;
++import com.sas.tokenlib.response.Response;
+ 
+ public interface ProductGroupService {
+ 	
+Index: ims/src/main/java/com/sas/ims/repository/ReferenceDetailRepository.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ims/src/main/java/com/sas/ims/repository/ReferenceDetailRepository.java b/ims/src/main/java/com/sas/ims/repository/ReferenceDetailRepository.java
+new file mode 100644
+--- /dev/null	(date 1681802188697)
++++ b/ims/src/main/java/com/sas/ims/repository/ReferenceDetailRepository.java	(date 1681802188697)
+@@ -0,0 +1,27 @@
++package com.sas.ims.repository;
++
++import com.sas.ims.entity.ReferenceDetail;
++import org.springframework.data.jpa.repository.JpaRepository;
++import org.springframework.data.jpa.repository.Query;
++import org.springframework.stereotype.Repository;
++import java.util.List;
++import java.util.Optional;
++
++@Repository
++public interface ReferenceDetailRepository extends JpaRepository<ReferenceDetail, String> {
++
++    Optional<List<ReferenceDetail>> findByReferenceDetailPK_ReferenceDomainOrderByValue4(String referenceDomain);
++
++    List<ReferenceDetail> findByReferenceDetailPK_ReferenceDomainInOrderByValue4(List<String> referenceDomain);
++
++    @Query(value = "select DISTINCT  REFERENCE_DOMAIN from reference_detail where REFERENCE_DOMAIN like :referenceDomain%", nativeQuery = true)
++    List<String> findByReferenceDomain(String referenceDomain);
++
++    ReferenceDetail findByReferenceDetailPK_ReferenceDomainAndReferenceDetailPK_KeyValue(String referenceDomain, String key);
++
++    List<ReferenceDetail> findByReferenceDetailPK_ReferenceDomain(String rd_relationship);
++
++    List<ReferenceDetail> findByReferenceDetailPK_ReferenceDomainIn(List<String> rd_relationship);
++
++
++}
+\ No newline at end of file
+Index: ims/src/main/java/com/sas/ims/service/ProductMasterService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.sas.ims.service;\r\n\r\nimport org.springframework.web.multipart.MultipartFile;\r\n\r\nimport com.sas.ims.dto.ProductMasterDto;\r\nimport com.sas.ims.response.Response;\r\n\r\npublic interface ProductMasterService {\r\n\t\r\n\tResponse getActiveProductDetails(ProductMasterDto dto);\r\n\t\r\n\tResponse addProductMaster(ProductMasterDto dto);\r\n\t\r\n\tResponse updateProductMaster(ProductMasterDto dto);\r\n\t\r\n\tResponse getProductDetailsById(Long productId);\r\n\t\r\n\tResponse softDeleteProduct(Long productId);\r\n\t\r\n\tResponse productUploaders(MultipartFile file);\r\n\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ims/src/main/java/com/sas/ims/service/ProductMasterService.java b/ims/src/main/java/com/sas/ims/service/ProductMasterService.java
+--- a/ims/src/main/java/com/sas/ims/service/ProductMasterService.java	(revision 69032cc5cdf8eac66f71a20b8b827bb147d70491)
++++ b/ims/src/main/java/com/sas/ims/service/ProductMasterService.java	(date 1681815413841)
+@@ -1,9 +1,9 @@
+ package com.sas.ims.service;
+ 
++import com.sas.tokenlib.response.Response;
+ import org.springframework.web.multipart.MultipartFile;
+ 
+ import com.sas.ims.dto.ProductMasterDto;
+-import com.sas.ims.response.Response;
+ 
+ public interface ProductMasterService {
+ 	
+Index: ims/src/main/java/com/sas/ims/entity/ReferenceDetailPK.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ims/src/main/java/com/sas/ims/entity/ReferenceDetailPK.java b/ims/src/main/java/com/sas/ims/entity/ReferenceDetailPK.java
+new file mode 100644
+--- /dev/null	(date 1681802125223)
++++ b/ims/src/main/java/com/sas/ims/entity/ReferenceDetailPK.java	(date 1681802125223)
+@@ -0,0 +1,20 @@
++package com.sas.ims.entity;
++
++import lombok.Getter;
++import lombok.Setter;
++
++import javax.persistence.Column;
++import javax.persistence.Embeddable;
++import java.io.Serializable;
++
++@Getter
++@Setter
++@Embeddable
++public class ReferenceDetailPK implements Serializable {
++
++    @Column(name = "REFERENCE_DOMAIN")
++    private String referenceDomain;
++
++    @Column(name = "KEY_VALUE")
++    private String keyValue;
++}
+Index: ims/src/main/java/com/sas/ims/entity/ReferenceDetail.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ims/src/main/java/com/sas/ims/entity/ReferenceDetail.java b/ims/src/main/java/com/sas/ims/entity/ReferenceDetail.java
+new file mode 100644
+--- /dev/null	(date 1681802146704)
++++ b/ims/src/main/java/com/sas/ims/entity/ReferenceDetail.java	(date 1681802146704)
+@@ -0,0 +1,41 @@
++package com.sas.ims.entity;
++
++import com.sas.ims.constant.Constant;
++import lombok.Getter;
++import lombok.Setter;
++import org.hibernate.envers.AuditTable;
++import org.hibernate.envers.Audited;
++import org.springframework.data.jpa.domain.support.AuditingEntityListener;
++
++import javax.persistence.*;
++import java.io.Serializable;
++
++@Entity
++@Getter
++@Setter
++@Audited
++@AuditTable(value = Constant.REFERENCE_DETAIL_H)
++@EntityListeners(AuditingEntityListener.class)
++@Table(name = "REFERENCE_DETAIL")
++public class ReferenceDetail extends BaseEntity implements Serializable {
++
++    private static final long serialVersionUID = -2338626292552177485L;
++
++    @EmbeddedId
++    private ReferenceDetailPK referenceDetailPK;
++
++    @Column(name = "DESCRIPTION")
++    private String description;
++
++    @Column(name = "VALUE_1")
++    private String value1;
++
++    @Column(name = "VALUE_2")
++    private String value2;
++
++    @Column(name = "VALUE_3")
++    private String value3;
++
++    @Column(name = "VALUE_4")
++    private String value4;
++}
+Index: ims/src/main/java/com/sas/ims/service/serviceImpl/ProductMasterServiceImpl.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.sas.ims.service.serviceImpl;\r\n\r\nimport java.util.List;\r\nimport java.util.Optional;\r\nimport java.util.stream.Collectors;\r\n\r\nimport com.sas.ims.converter.ProductConvertor;\r\nimport com.sas.ims.repository.ProductMasterRepository;\r\nimport com.sas.ims.service.ProductMasterService;\r\nimport org.springframework.beans.factory.annotation.Autowired;\r\nimport org.springframework.data.domain.PageRequest;\r\nimport org.springframework.data.domain.Pageable;\r\nimport org.springframework.data.domain.Sort;\r\nimport org.springframework.http.HttpStatus;\r\nimport org.springframework.stereotype.Service;\r\nimport org.springframework.util.StringUtils;\r\nimport org.springframework.web.multipart.MultipartFile;\r\n\r\nimport com.sas.ims.dto.ProductMasterDto;\r\nimport com.sas.ims.entity.ProductMaster;\r\nimport com.sas.ims.response.Response;\r\nimport com.sas.ims.utils.DateTimeUtil;\r\nimport com.sas.ims.utils.ObjectMapperUtil;\r\n\r\n@Service\r\npublic class ProductMasterServiceImpl implements ProductMasterService {\r\n\r\n\t@Autowired\r\n    ProductMasterRepository productMasterRepository;\r\n\r\n\t@Autowired\r\n\tObjectMapperUtil objectMapperUtil;\r\n\t\r\n\t@Autowired\r\n    ProductConvertor productConvertor;\r\n\r\n\t@Override\r\n\tpublic Response getActiveProductDetails(ProductMasterDto dto) {\r\n\t\t// TODO Auto-generated method stub\r\n\t\tPageable pageable = PageRequest.of(dto.getStartIndex(), dto.getEndIndex(), Sort.by(\"productId\").descending());\r\n\t\tOptional<List<ProductMaster>> productMasteLIstOptional = productMasterRepository\r\n\t\t\t\t.findByOrgIdAndProductCode(dto.getOrgId(), dto.getProductCode(), pageable);\r\n\t\tif (!productMasteLIstOptional.isPresent()) {\r\n\t\t\treturn Response.builder().status(HttpStatus.BAD_REQUEST).code(HttpStatus.BAD_REQUEST.value())\r\n\t\t\t\t\t.message(HttpStatus.BAD_REQUEST.name()).build();\r\n\t\t}\r\n\t\tList<ProductMasterDto> dtoList = productMasteLIstOptional.get().stream().map(this::entityToDto)\r\n\t\t\t\t.collect(Collectors.toList());\r\n\t\treturn Response.builder().status(HttpStatus.OK).data(dtoList).code(HttpStatus.OK.value())\r\n\t\t\t\t.message(HttpStatus.OK.name()).build();\r\n\t}\r\n\r\n\tpublic ProductMasterDto entityToDto(ProductMaster productMaster) {\r\n\t\tProductMasterDto labTestDto = new ProductMasterDto();\r\n\t\tobjectMapperUtil.map(productMaster, labTestDto);\r\n\t\treturn labTestDto;\r\n\t}\r\n\r\n\t@Override\r\n\tpublic Response addProductMaster(ProductMasterDto dto) {\r\n\t\t// TODO Auto-generated method stub\r\n\t\tProductMaster entity = new ProductMaster();\r\n\t\tobjectMapperUtil.map(dto, entity);\r\n\t\tproductMasterRepository.save(entity);\r\n\t\treturn Response.builder().status(HttpStatus.OK).code(HttpStatus.OK.value()).message(HttpStatus.OK.name())\r\n\t\t\t\t.build();\r\n\r\n\t}\r\n\r\n\t@Override\r\n\tpublic Response updateProductMaster(ProductMasterDto dto) {\r\n\t\t// TODO Auto-generated method stub\r\n\t\tOptional<ProductMaster> productMasterOptional = productMasterRepository\r\n\t\t\t\t.findByProductIdAndOrgId(dto.getProductId(), dto.getOrgId());\r\n\t\tif (!productMasterOptional.isPresent()) {\r\n\t\t\treturn Response.builder().status(HttpStatus.BAD_REQUEST).code(HttpStatus.BAD_REQUEST.value())\r\n\t\t\t\t\t.message(HttpStatus.BAD_REQUEST.name()).build();\r\n\t\t}\r\n\t\tobjectMapperUtil.map(dto, productMasterOptional.get());\r\n\t\tproductMasterRepository.save(productMasterOptional.get());\r\n\t\treturn Response.builder().status(HttpStatus.OK).code(HttpStatus.OK.value()).message(HttpStatus.OK.name())\r\n\t\t\t\t.build();\r\n\t}\r\n\r\n\t@Override\r\n\tpublic Response getProductDetailsById(Long productId) {\r\n\t\t// TODO Auto-generated method stub\r\n\t\tOptional<ProductMaster> productMasterOptional = productMasterRepository\r\n\t\t\t\t.findByProductIdAndOrgId(productId, 1L);\r\n\t\tif (!productMasterOptional.isPresent()) {\r\n\t\t\treturn Response.builder().status(HttpStatus.BAD_REQUEST).code(HttpStatus.BAD_REQUEST.value())\r\n\t\t\t\t\t.message(HttpStatus.BAD_REQUEST.name()).build();\r\n\t\t}\r\n\t\tProductMasterDto dto = new ProductMasterDto();\r\n\t\tobjectMapperUtil.map(dto, productMasterOptional.get());\r\n\t\treturn Response.builder().status(HttpStatus.OK).code(HttpStatus.OK.value()).data(dto)\r\n\t\t\t\t.message(HttpStatus.OK.name()).build();\r\n\t}\r\n\r\n\t@Override\r\n\tpublic Response softDeleteProduct(Long productId) {\r\n\t\t// TODO Auto-generated method stub\r\n\t\tOptional<ProductMaster> productMasterOptional = productMasterRepository\r\n\t\t\t\t.findByProductIdAndOrgId(productId, 1L);\r\n\t\tif (!productMasterOptional.isPresent()) {\r\n\t\t\treturn Response.builder().status(HttpStatus.BAD_REQUEST).code(HttpStatus.BAD_REQUEST.value())\r\n\t\t\t\t\t.message(HttpStatus.BAD_REQUEST.name()).build();\r\n\t\t}\r\n\t\tproductMasterOptional.get().setStatus(\"N\");\r\n\t\tproductMasterRepository.save(productMasterOptional.get());\r\n\t\treturn Response.builder().status(HttpStatus.OK).code(HttpStatus.OK.value())\r\n\t\t\t\t.message(HttpStatus.OK.name()).build();\r\n\t}\r\n\r\n\t@Override\r\n\tpublic Response productUploaders(MultipartFile file) {\r\n\t\t// TODO Auto-generated method stub\r\n\t\tList<ProductMasterDto> dtoList=productConvertor.convertFileToDto(file);\r\n\t\tdtoList.stream().map(this::dtoToEntity)\r\n\t\t.collect(Collectors.toList());\r\n\t\treturn null;\r\n\t}\r\n\tpublic ProductMasterDto dtoToEntity(ProductMasterDto dto) {\r\n\t\ttry {\r\n\t\tProductMaster entity = new ProductMaster();\r\n\t\tentity.setProductName(dto.getProductName());\r\n\t\tentity.setProductCode(dto.getProductCode());\r\n\t\tentity.setAmount(dto.getAmount());\r\n\t\tentity.setOrgId(dto.getOrgId());\r\n\t\tentity.setPartnerRefferenceCode(dto.getPartnerRefferenceCode());\r\n\t\tif(StringUtils.hasText(dto.getProductClosingDate()))\r\n\t\tentity.setProductClosingDate(DateTimeUtil.stringToDateTime(dto.getProductClosingDate(),DateTimeUtil.D_MMM_YYYY));\r\n\t\tentity.setProductGroupId(dto.getProductGroupId());\r\n\t\tentity.setProductIdentifierCode(dto.getProductIdentifierCode());\r\n\t\tif(StringUtils.hasText(dto.getProductOpeningDate()))\r\n\t\tentity.setProductOpeningDate(DateTimeUtil.stringToDateTime(dto.getProductOpeningDate(),DateTimeUtil.D_MMM_YYYY));\r\n\t\tentity.setQuantity(dto.getQuantity());\r\n\t\tentity.setStatus(dto.getStatus());\r\n\t\tproductMasterRepository.save(entity);\r\n\t\t}catch (Exception e) {\r\n\t\t\t// TODO: handle exception\r\n\t\t\tdto.setIsProccesble(false);\r\n\t\t}\r\n\t\treturn dto;\r\n\t}\r\n\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ims/src/main/java/com/sas/ims/service/serviceImpl/ProductMasterServiceImpl.java b/ims/src/main/java/com/sas/ims/service/serviceImpl/ProductMasterServiceImpl.java
+--- a/ims/src/main/java/com/sas/ims/service/serviceImpl/ProductMasterServiceImpl.java	(revision 69032cc5cdf8eac66f71a20b8b827bb147d70491)
++++ b/ims/src/main/java/com/sas/ims/service/serviceImpl/ProductMasterServiceImpl.java	(date 1681815413856)
+@@ -7,6 +7,7 @@
+ import com.sas.ims.converter.ProductConvertor;
+ import com.sas.ims.repository.ProductMasterRepository;
+ import com.sas.ims.service.ProductMasterService;
++import com.sas.tokenlib.response.Response;
+ import org.springframework.beans.factory.annotation.Autowired;
+ import org.springframework.data.domain.PageRequest;
+ import org.springframework.data.domain.Pageable;
+@@ -18,7 +19,6 @@
+ 
+ import com.sas.ims.dto.ProductMasterDto;
+ import com.sas.ims.entity.ProductMaster;
+-import com.sas.ims.response.Response;
+ import com.sas.ims.utils.DateTimeUtil;
+ import com.sas.ims.utils.ObjectMapperUtil;
+ 
+Index: ims/src/main/java/com/sas/ims/service/serviceImpl/ProductGroupServiceImpl.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.sas.ims.service.serviceImpl;\r\n\r\nimport java.util.List;\r\nimport java.util.Optional;\r\nimport java.util.stream.Collectors;\r\n\r\nimport com.sas.ims.repository.ProductGroupRepository;\r\nimport com.sas.ims.service.ProductGroupService;\r\nimport org.springframework.beans.factory.annotation.Autowired;\r\nimport org.springframework.data.domain.PageRequest;\r\nimport org.springframework.data.domain.Pageable;\r\nimport org.springframework.data.domain.Sort;\r\nimport org.springframework.http.HttpStatus;\r\nimport org.springframework.stereotype.Service;\r\n\r\nimport com.sas.ims.constant.Constant;\r\nimport com.sas.ims.dto.ProductGroupDto;\r\nimport com.sas.ims.entity.ProductGroup;\r\nimport com.sas.ims.response.Response;\r\nimport com.sas.ims.utils.ObjectMapperUtil;\r\n\r\n@Service\r\npublic class ProductGroupServiceImpl implements ProductGroupService, Constant {\r\n\r\n\t@Autowired\r\n    ProductGroupRepository productGroupRepository;\r\n\r\n\t@Autowired\r\n\tObjectMapperUtil objectMapperUtil;\r\n\r\n\t@Override\r\n\tpublic Response getActiveProductGroupDetails(ProductGroupDto dto) {\r\n\t\t// TODO Auto-generated method stub\r\n\t\tPageable pageable = PageRequest.of(dto.getStartIndex(), dto.getEndIndex(), Sort.by(\"id\").descending());\r\n\t\tOptional<List<ProductGroup>> productMasteLIstOptional = productGroupRepository\r\n\t\t\t\t.findByOrgIdAndGroupCode(dto.getOrgId(), dto.getGroupCode(), pageable);\r\n\t\tif (!productMasteLIstOptional.isPresent()) {\r\n\t\t\treturn Response.builder().status(HttpStatus.BAD_REQUEST).code(HttpStatus.BAD_REQUEST.value())\r\n\t\t\t\t\t.message(HttpStatus.BAD_REQUEST.name()).build();\r\n\t\t}\r\n\t\tList<ProductGroupDto> dtoList = productMasteLIstOptional.get().stream().map(this::entityToDto)\r\n\t\t\t\t.collect(Collectors.toList());\r\n\t\treturn Response.builder().status(HttpStatus.OK).data(dtoList).code(HttpStatus.OK.value())\r\n\t\t\t\t.message(HttpStatus.OK.name()).build();\r\n\t}\r\n\r\n\tpublic ProductGroupDto entityToDto(ProductGroup productMaster) {\r\n\t\tProductGroupDto labTestDto = new ProductGroupDto();\r\n\t\tobjectMapperUtil.map(productMaster, labTestDto);\r\n\t\treturn labTestDto;\r\n\t}\r\n\r\n\t@Override\r\n\tpublic Response addProductGroup(ProductGroupDto dto) {\r\n\t\t// TODO Auto-generated method stub\r\n\t\tProductGroup entity = new ProductGroup();\r\n\t\tobjectMapperUtil.map(dto, entity);\r\n\t\tproductGroupRepository.save(entity);\r\n\t\treturn Response.builder().status(HttpStatus.OK).code(HttpStatus.OK.value()).message(HttpStatus.OK.name())\r\n\t\t\t\t.build();\r\n\r\n\t}\r\n\r\n\t@Override\r\n\tpublic Response updateProductGroup(ProductGroupDto dto) {\r\n\t\t// TODO Auto-generated method stub\r\n\t\tOptional<ProductGroup> productMasterOptional = productGroupRepository\r\n\t\t\t\t.findByProductGroupIdAndOrgId(dto.getParentGroupId(), dto.getOrgId());\r\n\t\tif (!productMasterOptional.isPresent()) {\r\n\t\t\treturn Response.builder().status(HttpStatus.BAD_REQUEST).code(HttpStatus.BAD_REQUEST.value())\r\n\t\t\t\t\t.message(HttpStatus.BAD_REQUEST.name()).build();\r\n\t\t}\r\n\t\tobjectMapperUtil.map(dto, productMasterOptional.get());\r\n\t\tproductGroupRepository.save(productMasterOptional.get());\r\n\t\treturn Response.builder().status(HttpStatus.OK).code(HttpStatus.OK.value()).message(HttpStatus.OK.name())\r\n\t\t\t\t.build();\r\n\t}\r\n\r\n\t@Override\r\n\tpublic Response getProductGroupDetailsById(Long productId) {\r\n\t\t// TODO Auto-generated method stub\r\n\t\tOptional<ProductGroup> productMasterOptional = productGroupRepository.findByProductGroupIdAndOrgId(productId, 1L);\r\n\t\tif (!productMasterOptional.isPresent()) {\r\n\t\t\treturn Response.builder().status(HttpStatus.BAD_REQUEST).code(HttpStatus.BAD_REQUEST.value())\r\n\t\t\t\t\t.message(HttpStatus.BAD_REQUEST.name()).build();\r\n\t\t}\r\n\t\tProductGroupDto dto = new ProductGroupDto();\r\n\t\tobjectMapperUtil.map(dto, productMasterOptional.get());\r\n\t\treturn Response.builder().status(HttpStatus.OK).code(HttpStatus.OK.value()).data(dto)\r\n\t\t\t\t.message(HttpStatus.OK.name()).build();\r\n\t}\r\n\r\n\t@Override\r\n\tpublic Response softDeleteProductGroup(Long productId) {\r\n\t\t// TODO Auto-generated method stub\r\n\t\tOptional<ProductGroup> productMasterOptional = productGroupRepository.findByProductGroupIdAndOrgId(productId, 1L);\r\n\t\tif (!productMasterOptional.isPresent()) {\r\n\t\t\treturn Response.builder().status(HttpStatus.BAD_REQUEST).code(HttpStatus.BAD_REQUEST.value())\r\n\t\t\t\t\t.message(HttpStatus.BAD_REQUEST.name()).build();\r\n\t\t}\r\n\t\tproductMasterOptional.get().setActive(\"N\");\r\n\t\tproductGroupRepository.save(productMasterOptional.get());\r\n\t\treturn Response.builder().status(HttpStatus.OK).code(HttpStatus.OK.value()).message(HttpStatus.OK.name())\r\n\t\t\t\t.build();\r\n\t}\r\n\r\n\t@Override\r\n\tpublic Response getParentGroup() {\r\n\t\t// TODO Auto-generated method stub\r\n\t\tOptional<List<ProductGroup>> groupListOptional=productGroupRepository.findByOrgIdAndActiveAndGroupType(1L, ACTIVE_STATUS,PARENT_GROUP_TYPE);\r\n\t\tList<ProductGroupDto> dtoList = groupListOptional.get().stream().map(this::entityToDto)\r\n\t\t\t\t.collect(Collectors.toList());\r\n\t\treturn Response.builder().status(HttpStatus.OK).data(dtoList).code(HttpStatus.OK.value())\r\n\t\t\t\t.message(HttpStatus.OK.name()).build();\r\n\t}\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ims/src/main/java/com/sas/ims/service/serviceImpl/ProductGroupServiceImpl.java b/ims/src/main/java/com/sas/ims/service/serviceImpl/ProductGroupServiceImpl.java
+--- a/ims/src/main/java/com/sas/ims/service/serviceImpl/ProductGroupServiceImpl.java	(revision 69032cc5cdf8eac66f71a20b8b827bb147d70491)
++++ b/ims/src/main/java/com/sas/ims/service/serviceImpl/ProductGroupServiceImpl.java	(date 1681815413887)
+@@ -6,6 +6,7 @@
+ 
+ import com.sas.ims.repository.ProductGroupRepository;
+ import com.sas.ims.service.ProductGroupService;
++import com.sas.tokenlib.response.Response;
+ import org.springframework.beans.factory.annotation.Autowired;
+ import org.springframework.data.domain.PageRequest;
+ import org.springframework.data.domain.Pageable;
+@@ -16,7 +17,6 @@
+ import com.sas.ims.constant.Constant;
+ import com.sas.ims.dto.ProductGroupDto;
+ import com.sas.ims.entity.ProductGroup;
+-import com.sas.ims.response.Response;
+ import com.sas.ims.utils.ObjectMapperUtil;
+ 
+ @Service
+Index: ims/src/main/java/com/sas/ims/exception/InternalServerErrorException.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ims/src/main/java/com/sas/ims/exception/InternalServerErrorException.java b/ims/src/main/java/com/sas/ims/exception/InternalServerErrorException.java
+new file mode 100644
+--- /dev/null	(date 1681925441368)
++++ b/ims/src/main/java/com/sas/ims/exception/InternalServerErrorException.java	(date 1681925441368)
+@@ -0,0 +1,35 @@
++package com.sas.ims.exception;
++
++import lombok.Getter;
++import org.springframework.http.HttpStatus;
++
++/**
++ * @author Ajay
++ */
++@Getter
++public class InternalServerErrorException extends Exception {
++    private static final long serialVersionUID = 635343809670844351L;
++
++    private int code;
++
++    private HttpStatus httpStatus;
++
++    private Object responseObject;
++
++    public InternalServerErrorException(String message) {
++        super(message);
++    }
++
++    public InternalServerErrorException(String message, HttpStatus status) {
++        super(message);
++        this.code = status.value();
++        this.httpStatus = status;
++    }
++
++    public InternalServerErrorException(String message, HttpStatus status, Object responseObject) {
++        super(message);
++        this.code = status.value();
++        this.httpStatus = status;
++        this.responseObject = responseObject;
++    }
++}
+Index: ims/src/main/java/com/sas/ims/entity/ReferenceController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ims/src/main/java/com/sas/ims/entity/ReferenceController.java b/ims/src/main/java/com/sas/ims/entity/ReferenceController.java
+new file mode 100644
+--- /dev/null	(date 1681802004643)
++++ b/ims/src/main/java/com/sas/ims/entity/ReferenceController.java	(date 1681802004643)
+@@ -0,0 +1,47 @@
++package com.sas.ims.entity;
++
++import com.sas.ims.exception.ObjectNotFoundException;
++import com.sas.ims.request.ReferenceDomainRequest;
++import com.sas.ims.request.ReferenceRequest;
++import com.sas.ims.service.ReferenceService;
++import com.sas.tokenlib.response.Response;
++import org.springframework.beans.factory.annotation.Autowired;
++import org.springframework.web.bind.annotation.*;
++
++@RestController
++@CrossOrigin
++@RequestMapping(value = "/api/reference")
++public class ReferenceController {
++
++    private final ReferenceService referenceService;
++
++    @Autowired
++    public ReferenceController(ReferenceService referenceService) {
++        this.referenceService = referenceService;
++    }
++
++    @GetMapping(value = "/{referenceKey}")
++    public Response getReferenceByKey(@PathVariable String referenceKey) {
++        return referenceService.getReferenceByKey(referenceKey);
++    }
++
++    @GetMapping(value = "/referenceDomain/{domain}")
++    public Response findByReferenceDomain(@PathVariable String domain) throws ObjectNotFoundException {
++        return referenceService.findByReferenceDomain(domain);
++    }
++
++    @PostMapping
++    public Response addReferenceDetails(@RequestBody ReferenceRequest request) throws ObjectNotFoundException {
++        return referenceService.addReferenceDetails(request);
++    }
++
++    @PostMapping(value = "/update")
++    public Response updateReferenceDetails(@RequestBody ReferenceRequest request) throws ObjectNotFoundException {
++        return referenceService.updateReferenceDetail(request);
++    }
++
++    @PostMapping("/list")
++    public Response getReferenceDetailsList(@RequestBody ReferenceDomainRequest referenceDomainRequest) {
++        return referenceService.getReferenceDetailsList(referenceDomainRequest);
++    }
++}
+Index: ims/src/main/java/com/sas/ims/constant/Constant.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.sas.ims.constant;\r\n\r\npublic interface Constant {\r\n\r\n    String DEFAULT_TENANT = \"main_db\";\r\n    String NOT_FOUND = \"Record not found\";\r\n    String SUCCESS = \"Transaction completed successfully\";\r\n\r\n    String AUTHENTICATION_FAILED = \"Authentication Failed\";\r\n    String INVALID_TENANT_IDENTIFIER = \"Invalid tenant identifier\";\r\n    String INVALID_USERNAME_PASSWORD = \"Invalid username/password\";\r\n    String INVALID_REQUEST=\"Invalid Request\";\r\n\r\n    String ACTIVE_STATUS=\"A\";\r\n    String IN_ACTIVE_STATUS=\"X\";\r\n    String PARENT_GROUP_TYPE=\"P\";\r\n\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ims/src/main/java/com/sas/ims/constant/Constant.java b/ims/src/main/java/com/sas/ims/constant/Constant.java
+--- a/ims/src/main/java/com/sas/ims/constant/Constant.java	(revision 69032cc5cdf8eac66f71a20b8b827bb147d70491)
++++ b/ims/src/main/java/com/sas/ims/constant/Constant.java	(date 1681802188712)
+@@ -15,4 +15,6 @@
+     String IN_ACTIVE_STATUS="X";
+     String PARENT_GROUP_TYPE="P";
+ 
++    public static final String REFERENCE_DETAIL_H = "REFERENCE_DETAIL_H";
++
+ }
+Index: ims/src/main/java/com/sas/ims/service/ReferenceService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ims/src/main/java/com/sas/ims/service/ReferenceService.java b/ims/src/main/java/com/sas/ims/service/ReferenceService.java
+new file mode 100644
+--- /dev/null	(date 1681801967100)
++++ b/ims/src/main/java/com/sas/ims/service/ReferenceService.java	(date 1681801967100)
+@@ -0,0 +1,20 @@
++package com.sas.ims.service;
++
++
++import com.sas.ims.exception.ObjectNotFoundException;
++import com.sas.ims.request.ReferenceDomainRequest;
++import com.sas.ims.request.ReferenceRequest;
++import com.sas.tokenlib.response.Response;
++
++public interface ReferenceService {
++
++    Response getReferenceByKey(String referenceKey);
++
++    Response findByReferenceDomain(String domain) throws ObjectNotFoundException;
++
++    Response addReferenceDetails(ReferenceRequest request) throws ObjectNotFoundException;
++
++    Response updateReferenceDetail(ReferenceRequest request) throws ObjectNotFoundException;
++
++    Response getReferenceDetailsList(ReferenceDomainRequest referenceDomain);
++}
+\ No newline at end of file
+Index: ims/src/main/java/com/sas/ims/exception/GlobalExceptionHandler.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.sas.ims.exception;\r\n\r\nimport com.sas.ims.response.Response;\r\nimport lombok.extern.slf4j.Slf4j;\r\nimport org.springframework.http.HttpStatus;\r\nimport org.springframework.http.ResponseEntity;\r\nimport org.springframework.http.converter.HttpMessageNotReadableException;\r\nimport org.springframework.security.access.AccessDeniedException;\r\nimport org.springframework.validation.FieldError;\r\nimport org.springframework.web.HttpRequestMethodNotSupportedException;\r\nimport org.springframework.web.bind.MethodArgumentNotValidException;\r\nimport org.springframework.web.bind.annotation.ControllerAdvice;\r\nimport org.springframework.web.bind.annotation.ExceptionHandler;\r\nimport org.springframework.web.bind.annotation.ResponseBody;\r\nimport org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;\r\n\r\nimport java.util.ArrayList;\r\nimport java.util.List;\r\n\r\n@Slf4j\r\n@ControllerAdvice\r\npublic class GlobalExceptionHandler {\r\n\r\n    private static final String ERROR_MSG = \"Something went Wrong, Please try Later\";\r\n\r\n    @ExceptionHandler(value = Exception.class)\r\n    @ResponseBody\r\n    public ResponseEntity<Object> handleException(Exception ex) {\r\n        log.error(\"Exception  occurs => {}\", ex.toString());\r\n        return new ResponseEntity<>(new Response(ERROR_MSG, HttpStatus.INTERNAL_SERVER_ERROR),\r\n                HttpStatus.INTERNAL_SERVER_ERROR);\r\n    }\r\n\r\n    @ExceptionHandler(value = BadRequestException.class)\r\n    @ResponseBody\r\n    public ResponseEntity<Object> handleBadRequestException(BadRequestException ex) {\r\n        log.error(\"BadRequestException occurs => {}\", ex.toString());\r\n        return new ResponseEntity<>(new Response(ex.getMessage(), ex.getResponseObject(), ex.getHttpStatus()),\r\n                HttpStatus.OK);\r\n    }\r\n\r\n    @ExceptionHandler(value = ObjectNotFoundException.class)\r\n    @ResponseBody\r\n    public ResponseEntity<Object> handleObjectNotFoundException(ObjectNotFoundException ex) {\r\n        log.error(\"ObjectNotFoundException occurs => {}\", ex.toString());\r\n        return new ResponseEntity<>(new Response(ex.getMessage(), ex.getResponseObject(), ex.getHttpStatus()),\r\n                HttpStatus.OK);\r\n    }\r\n\r\n    @ExceptionHandler(value = HttpRequestMethodNotSupportedException.class)\r\n    @ResponseBody\r\n    public ResponseEntity<Object> handleException(HttpRequestMethodNotSupportedException ex) {\r\n        log.error(\"HttpRequestMethodNotSupportedException occurs => {}\", ex.toString());\r\n        return new ResponseEntity<>(new Response(ex.getMessage(), HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);\r\n    }\r\n\r\n    @ExceptionHandler(value = MethodArgumentNotValidException.class)\r\n    @ResponseBody\r\n    public ResponseEntity<Object> handleException(MethodArgumentNotValidException ex) {\r\n        log.error(\"MethodArgumentNotValidException occurred \", ex);\r\n        final List<String> errors = new ArrayList<>();\r\n        for (final FieldError error : ex.getBindingResult().getFieldErrors()) {\r\n            errors.add(error.getField() + \": \" + error.getDefaultMessage());\r\n        }\r\n        return new ResponseEntity<>(\r\n                new Response(\"Please pass all mandatory attributes\", errors, HttpStatus.BAD_REQUEST),\r\n                HttpStatus.BAD_REQUEST);\r\n    }\r\n\r\n    @ExceptionHandler(value = HttpMessageNotReadableException.class)\r\n    @ResponseBody\r\n    public ResponseEntity<Object> handleException(HttpMessageNotReadableException ex) {\r\n        log.error(\"HttpMessageNotReadableException occurred \", ex);\r\n        return new ResponseEntity<>(new Response(\"Invalid request body\", HttpStatus.BAD_REQUEST),\r\n                HttpStatus.BAD_REQUEST);\r\n    }\r\n\r\n    @ExceptionHandler(value = MethodArgumentTypeMismatchException.class)\r\n    @ResponseBody\r\n    public ResponseEntity<Object> handleException(MethodArgumentTypeMismatchException ex) {\r\n        log.error(\"MethodArgumentTypeMismatchException occurred \", ex);\r\n        return new ResponseEntity<>(new Response(\"Invalid params/attributes passed \", HttpStatus.BAD_REQUEST),\r\n                HttpStatus.BAD_REQUEST);\r\n    }\r\n\r\n    @ExceptionHandler(value = AccessDeniedException.class)\r\n    @ResponseBody\r\n    public ResponseEntity<Object> handleException(AccessDeniedException ex) {\r\n        log.error(\"AccessDeniedException occurred \", ex);\r\n        return new ResponseEntity<>(new Response(\"Access Denied\", HttpStatus.FORBIDDEN), HttpStatus.FORBIDDEN);\r\n    }\r\n\r\n\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ims/src/main/java/com/sas/ims/exception/GlobalExceptionHandler.java b/ims/src/main/java/com/sas/ims/exception/GlobalExceptionHandler.java
+--- a/ims/src/main/java/com/sas/ims/exception/GlobalExceptionHandler.java	(revision 69032cc5cdf8eac66f71a20b8b827bb147d70491)
++++ b/ims/src/main/java/com/sas/ims/exception/GlobalExceptionHandler.java	(date 1681815559334)
+@@ -1,6 +1,6 @@
+ package com.sas.ims.exception;
+ 
+-import com.sas.ims.response.Response;
++import com.sas.tokenlib.response.Response;
+ import lombok.extern.slf4j.Slf4j;
+ import org.springframework.http.HttpStatus;
+ import org.springframework.http.ResponseEntity;
+Index: ims/src/main/java/com/sas/ims/service/serviceImpl/PincodeServiceImpl.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.sas.ims.service.serviceImpl;\r\n\r\nimport com.sas.ims.constant.Constant;\r\nimport com.sas.ims.dao.PincodeDao;\r\nimport com.sas.ims.dto.PincodeMasterDto;\r\nimport com.sas.ims.dto.StateMasterDto;\r\nimport com.sas.ims.entity.PincodeMaster;\r\nimport com.sas.ims.entity.PincodeMasterPK;\r\nimport com.sas.ims.entity.StateMaster;\r\nimport com.sas.ims.exception.BadRequestException;\r\nimport com.sas.ims.exception.ObjectNotFoundException;\r\nimport com.sas.ims.repository.PincodeRepository;\r\nimport com.sas.ims.request.FilterRequest;\r\nimport com.sas.ims.service.PincodeService;\r\nimport com.sas.tokenlib.response.Response;\r\nimport com.sas.tokenlib.service.UserCredentialService;\r\nimport com.sas.tokenlib.utils.UserSession;\r\nimport lombok.AllArgsConstructor;\r\nimport org.springframework.beans.BeanUtils;\r\nimport org.springframework.http.HttpStatus;\r\nimport org.springframework.stereotype.Service;\r\n\r\nimport java.time.LocalDateTime;\r\nimport java.util.ArrayList;\r\nimport java.util.List;\r\nimport java.util.Optional;\r\n\r\n@Service\r\n@AllArgsConstructor\r\npublic class PincodeServiceImpl implements PincodeService, Constant {\r\n\r\n    private final PincodeRepository pincodeRepository;\r\n\r\n    private final UserCredentialService userCredentialService;\r\n\r\n    private final PincodeDao pincodeDao;\r\n\r\n    @Override\r\n    public Response getPincodeList(Integer pincode) {\r\n        List<PincodeMaster> pincodeMasterList = pincodeRepository.findAllByPincodeMaster(pincode);\r\n        List<PincodeMasterDto> pincodeMasterDtoList = new ArrayList<>();\r\n        for (PincodeMaster pincodeMaster : pincodeMasterList) {\r\n            //Pincode List with state, district and village\r\n            PincodeMasterDto pincodeMasterDto = new PincodeMasterDto();\r\n            pincodeMasterDto.setPincode(pincodeMaster.getPincodeMasterPK().getPincode());\r\n\r\n            StateMaster stateMaster = pincodeMaster.getStateMaster();\r\n            StateMasterDto stateMasterDto = new StateMasterDto();\r\n            stateMasterDto.setStateId(stateMaster.getStateId());\r\n            stateMasterDto.setStateCode(stateMaster.getStateCode());\r\n            stateMasterDto.setStateName(stateMaster.getStateName());\r\n            pincodeMasterDto.setState(stateMasterDto);\r\n\r\n            pincodeMasterDtoList.add(pincodeMasterDto);\r\n        }\r\n        return new Response(SUCCESS, pincodeMasterDtoList, HttpStatus.OK);\r\n    }\r\n\r\n    @Override\r\n    public Response addPincode(PincodeMasterDto pincodeMasterDto) {\r\n        Response response = new Response();\r\n        UserSession userSession = userCredentialService.getUserSession();\r\n        Optional<PincodeMaster> pincodeMaster = pincodeRepository.findByPincodeMasterPK_Pincode(pincodeMasterDto.getPincode());\r\n        if (pincodeMaster.isPresent()) {\r\n            response.setCode(HttpStatus.BAD_REQUEST.value());\r\n            response.setMessage(\"This Pincode already exists.\");\r\n            response.setStatus(HttpStatus.BAD_REQUEST);\r\n        } else {\r\n            PincodeMaster pincode = new PincodeMaster();\r\n            PincodeMasterPK pincodeMasterPK = new PincodeMasterPK();\r\n            pincodeMasterPK.setPincode(pincodeMasterDto.getPincode());\r\n            pincodeMasterPK.setCountryId(1);\r\n            pincode.setPincodeMasterPK(pincodeMasterPK);\r\n            pincode.setStateId(pincodeMasterDto.getStateId());\r\n            pincode.setActive(\"Y\");\r\n            pincode.setInsertedBy(String.valueOf(userSession.getCompany().getCompanyId()));\r\n            pincode.setInsertedOn(LocalDateTime.now());\r\n            pincodeRepository.save(pincode);\r\n            response.setCode(HttpStatus.OK.value());\r\n            response.setStatus(HttpStatus.OK);\r\n            response.setMessage(\"Transaction saved successfully with Pincode : \" + pincode.getPincodeMasterPK().getPincode());\r\n        }\r\n        return response;\r\n    }\r\n\r\n    @Override\r\n    public Response updatePincode(PincodeMasterDto pincodeMasterDto) throws ObjectNotFoundException {\r\n        UserSession userSession = userCredentialService.getUserSession();\r\n        PincodeMaster pincodeMaster = pincodeRepository.findByPincodeMasterPK_Pincode(pincodeMasterDto.getPincode()).orElseThrow(() -> new ObjectNotFoundException(\"Pincode does not exist.\", HttpStatus.NOT_FOUND));\r\n        if (pincodeMaster.getPincodeMasterPK().getPincode().equals(pincodeMasterDto.getPincode())) {\r\n            pincodeMasterDto.mapDtoToEntityForPincodeUpdate(pincodeMasterDto, pincodeMaster, userSession);\r\n            pincodeRepository.save(pincodeMaster);\r\n        }\r\n        return new Response(\"Pincode updated successfully\", HttpStatus.OK);\r\n    }\r\n\r\n    @Override\r\n    public Response getPincodeDetails(Integer pincode) throws ObjectNotFoundException {\r\n        PincodeMaster pincodeMaster = pincodeRepository.findByPincodeMasterPK_Pincode(pincode).orElseThrow(() -> new ObjectNotFoundException(\"Invalid Pincode.\", HttpStatus.NOT_FOUND));\r\n        PincodeMasterDto pincodeMasterDto = new PincodeMasterDto();\r\n        BeanUtils.copyProperties(pincodeMaster, pincodeMasterDto);\r\n        pincodeMasterDto.setPincode(pincodeMaster.getPincodeMasterPK().getPincode());\r\n        return new Response(SUCCESS, pincodeMasterDto, HttpStatus.OK);\r\n    }\r\n\r\n    @Override\r\n    public Response getPincodeDetailsList(FilterRequest filterRequest) throws BadRequestException {\r\n        Long count = null;\r\n        if (filterRequest.getStart() == 0) {\r\n            count = pincodeDao.findAllPincodeMasterCount(filterRequest);\r\n        }\r\n        if (\"Y\".equalsIgnoreCase(filterRequest.getIsCsv())) {\r\n            filterRequest.setLimit(pincodeDao.findAllPincodeMasterCount(filterRequest).intValue());\r\n        }\r\n        List<PincodeMaster> pincodeMasterList = pincodeDao.findAllPincodeMaster(filterRequest);\r\n        List<PincodeMasterDto> pincodeMasterDtoList = new ArrayList<>();\r\n        for (PincodeMaster pincodeMaster : pincodeMasterList) {\r\n            PincodeMasterDto pincodeMasterDto = new PincodeMasterDto();\r\n            pincodeMasterDto.setDistrictName(pincodeMaster.getDistrictMaster().getDistrictName());\r\n            pincodeMasterDto.setDistrictId(pincodeMaster.getDistrictId());\r\n            pincodeMasterDto.setStateId(pincodeMaster.getStateId());\r\n            pincodeMasterDto.setStateName(pincodeMaster.getStateMaster().getStateName());\r\n            pincodeMasterDto.setActive(pincodeMaster.getActive());\r\n            pincodeMasterDto.setPincode(pincodeMaster.getPincodeMasterPK().getPincode());\r\n            pincodeMasterDto.setCountryId(pincodeMaster.getPincodeMasterPK().getCountryId());\r\n            pincodeMasterDtoList.add(pincodeMasterDto);\r\n        }\r\n        return new Response(SUCCESS, pincodeMasterDtoList, HttpStatus.OK, count);\r\n    }\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ims/src/main/java/com/sas/ims/service/serviceImpl/PincodeServiceImpl.java b/ims/src/main/java/com/sas/ims/service/serviceImpl/PincodeServiceImpl.java
+--- a/ims/src/main/java/com/sas/ims/service/serviceImpl/PincodeServiceImpl.java	(revision 69032cc5cdf8eac66f71a20b8b827bb147d70491)
++++ b/ims/src/main/java/com/sas/ims/service/serviceImpl/PincodeServiceImpl.java	(date 1681812411398)
+@@ -2,8 +2,10 @@
+ 
+ import com.sas.ims.constant.Constant;
+ import com.sas.ims.dao.PincodeDao;
++import com.sas.ims.dto.DistrictMasterDto;
+ import com.sas.ims.dto.PincodeMasterDto;
+ import com.sas.ims.dto.StateMasterDto;
++import com.sas.ims.entity.DistrictMaster;
+ import com.sas.ims.entity.PincodeMaster;
+ import com.sas.ims.entity.PincodeMasterPK;
+ import com.sas.ims.entity.StateMaster;
+@@ -37,7 +39,7 @@
+ 
+     @Override
+     public Response getPincodeList(Integer pincode) {
+-        List<PincodeMaster> pincodeMasterList = pincodeRepository.findAllByPincodeMaster(pincode);
++        List<PincodeMaster> pincodeMasterList = pincodeRepository.findAllByPincodeMaster(String.valueOf(pincode));
+         List<PincodeMasterDto> pincodeMasterDtoList = new ArrayList<>();
+         for (PincodeMaster pincodeMaster : pincodeMasterList) {
+             //Pincode List with state, district and village
+@@ -51,6 +53,13 @@
+             stateMasterDto.setStateName(stateMaster.getStateName());
+             pincodeMasterDto.setState(stateMasterDto);
+ 
++            DistrictMaster districtMaster = pincodeMaster.getDistrictMaster();
++            DistrictMasterDto districtMasterDto = new DistrictMasterDto();
++            districtMasterDto.setDistrictId(districtMaster.getDistrictId());
++            districtMasterDto.setDistrictCode(districtMaster.getDistrictCode());
++            districtMasterDto.setDistrictName(districtMaster.getDistrictName());
++            pincodeMasterDto.setDistrict(districtMasterDto);
++
+             pincodeMasterDtoList.add(pincodeMasterDto);
+         }
+         return new Response(SUCCESS, pincodeMasterDtoList, HttpStatus.OK);
+Index: ims/src/main/java/com/sas/ims/repository/PincodeRepository.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.sas.ims.repository;\r\n\r\nimport com.sas.ims.entity.PincodeMaster;\r\nimport org.springframework.data.jpa.repository.JpaRepository;\r\nimport org.springframework.data.jpa.repository.Query;\r\nimport org.springframework.stereotype.Repository;\r\n\r\nimport java.util.List;\r\nimport java.util.Optional;\r\n\r\n@Repository\r\npublic interface PincodeRepository extends JpaRepository<PincodeMaster, Integer> {\r\n\r\n    @Query(value = \"select * from pincode_master where pincode like :pincode% AND ACTIVE ='Y'\", nativeQuery = true)\r\n    List<PincodeMaster> findAllByPincodeMaster(Integer pincode);\r\n\r\n    Optional<PincodeMaster> findByPincodeMasterPK_PincodeAndPincodeMasterPK_CountryId(Integer pincode, Integer countryId);\r\n\r\n    Optional<PincodeMaster> findByPincodeMasterPK_Pincode(Integer pincode);\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ims/src/main/java/com/sas/ims/repository/PincodeRepository.java b/ims/src/main/java/com/sas/ims/repository/PincodeRepository.java
+--- a/ims/src/main/java/com/sas/ims/repository/PincodeRepository.java	(revision 69032cc5cdf8eac66f71a20b8b827bb147d70491)
++++ b/ims/src/main/java/com/sas/ims/repository/PincodeRepository.java	(date 1681812313323)
+@@ -11,8 +11,8 @@
+ @Repository
+ public interface PincodeRepository extends JpaRepository<PincodeMaster, Integer> {
+ 
+-    @Query(value = "select * from pincode_master where pincode like :pincode% AND ACTIVE ='Y'", nativeQuery = true)
+-    List<PincodeMaster> findAllByPincodeMaster(Integer pincode);
++    @Query(value = "SELECT * FROM pincode_master WHERE CAST(pincode AS TEXT) LIKE CONCAT('%',:pincode,'%') and ACTIVE = 'Y'", nativeQuery = true)
++    List<PincodeMaster> findAllByPincodeMaster(String pincode);
+ 
+     Optional<PincodeMaster> findByPincodeMasterPK_PincodeAndPincodeMasterPK_CountryId(Integer pincode, Integer countryId);
+ 
+Index: ims/src/main/java/com/sas/ims/controller/ProductMasterController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.sas.ims.controller;\r\n\r\nimport com.sas.ims.exception.BadRequestException;\r\nimport com.sas.ims.exception.ObjectNotFoundException;\r\nimport org.springframework.beans.factory.annotation.Autowired;\r\nimport org.springframework.web.bind.annotation.CrossOrigin;\r\nimport org.springframework.web.bind.annotation.GetMapping;\r\nimport org.springframework.web.bind.annotation.PathVariable;\r\nimport org.springframework.web.bind.annotation.PostMapping;\r\nimport org.springframework.web.bind.annotation.PutMapping;\r\nimport org.springframework.web.bind.annotation.RequestBody;\r\nimport org.springframework.web.bind.annotation.RequestMapping;\r\nimport org.springframework.web.bind.annotation.RequestPart;\r\nimport org.springframework.web.bind.annotation.RestController;\r\nimport org.springframework.web.multipart.MultipartFile;\r\n\r\nimport com.sas.ims.dto.ProductMasterDto;\r\nimport com.sas.ims.response.Response;\r\nimport com.sas.ims.service.ProductMasterService;\r\n\r\nimport lombok.extern.slf4j.Slf4j;\r\n\r\n@RestController\r\n@RequestMapping(\"/api\")\r\n@CrossOrigin(\"*\")\r\n@Slf4j\r\npublic class ProductMasterController {\r\n\t\r\n\t@Autowired\r\n\tProductMasterService productMasterService;\r\n\t\r\n\r\n    @PostMapping(\"/addProduct\")\r\n    public Response addProductMaster(@RequestBody ProductMasterDto dto) throws ObjectNotFoundException, BadRequestException {\r\n    \tlog.info(\"addProductMaster \");\r\n        return productMasterService.addProductMaster(dto);\r\n    }\r\n\r\n    @PostMapping(\"/products\")\r\n    public Response getProductList(@RequestBody ProductMasterDto dto) throws BadRequestException {\r\n        return productMasterService.getActiveProductDetails(dto);\r\n    }\r\n\r\n    @GetMapping(value = \"/product/{productId}\")\r\n    public Response getProductDetailsById(@PathVariable Long productId) throws ObjectNotFoundException {\r\n        return productMasterService.getProductDetailsById(productId);\r\n    }\r\n\r\n    @PostMapping(\"/updateProduct\")\r\n    public Response updateProduct(@RequestBody ProductMasterDto dto) throws ObjectNotFoundException, BadRequestException {\r\n        return productMasterService.updateProductMaster(dto);\r\n    }\r\n    \r\n    @PutMapping(\"/delete\")\r\n    public Response softDeleteProduct(@PathVariable Long productId) throws ObjectNotFoundException, BadRequestException {\r\n        return productMasterService.softDeleteProduct(productId);\r\n    }\r\n    \r\n    @PostMapping(\"/productUploaders\")\r\n    public Response productUploaders(@RequestPart(\"file\") MultipartFile file) throws BadRequestException {\r\n        return productMasterService.productUploaders(file);\r\n    }\r\n\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ims/src/main/java/com/sas/ims/controller/ProductMasterController.java b/ims/src/main/java/com/sas/ims/controller/ProductMasterController.java
+--- a/ims/src/main/java/com/sas/ims/controller/ProductMasterController.java	(revision 69032cc5cdf8eac66f71a20b8b827bb147d70491)
++++ b/ims/src/main/java/com/sas/ims/controller/ProductMasterController.java	(date 1681815413841)
+@@ -2,6 +2,7 @@
+ 
+ import com.sas.ims.exception.BadRequestException;
+ import com.sas.ims.exception.ObjectNotFoundException;
++import com.sas.tokenlib.response.Response;
+ import org.springframework.beans.factory.annotation.Autowired;
+ import org.springframework.web.bind.annotation.CrossOrigin;
+ import org.springframework.web.bind.annotation.GetMapping;
+@@ -15,7 +16,6 @@
+ import org.springframework.web.multipart.MultipartFile;
+ 
+ import com.sas.ims.dto.ProductMasterDto;
+-import com.sas.ims.response.Response;
+ import com.sas.ims.service.ProductMasterService;
+ 
+ import lombok.extern.slf4j.Slf4j;
+Index: ims/src/main/java/com/sas/ims/controller/ProductGroupController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.sas.ims.controller;\r\n\r\nimport com.sas.ims.exception.BadRequestException;\r\nimport com.sas.ims.exception.ObjectNotFoundException;\r\nimport org.springframework.beans.factory.annotation.Autowired;\r\nimport org.springframework.web.bind.annotation.CrossOrigin;\r\nimport org.springframework.web.bind.annotation.GetMapping;\r\nimport org.springframework.web.bind.annotation.PathVariable;\r\nimport org.springframework.web.bind.annotation.PostMapping;\r\nimport org.springframework.web.bind.annotation.RequestBody;\r\nimport org.springframework.web.bind.annotation.RequestMapping;\r\nimport org.springframework.web.bind.annotation.RestController;\r\n\r\nimport com.sas.ims.dto.ProductGroupDto;\r\nimport com.sas.ims.response.Response;\r\nimport com.sas.ims.service.ProductGroupService;\r\n\r\n@RestController\r\n@RequestMapping(\"/api\")\r\n@CrossOrigin(\"*\")\r\npublic class ProductGroupController {\r\n\t\r\n\t@Autowired\r\n\tProductGroupService productGroupService;\r\n\t\r\n\r\n    @PostMapping(\"/addProductGroup\")\r\n    public Response addProductMaster(@RequestBody ProductGroupDto dto) throws ObjectNotFoundException, BadRequestException {\r\n        return productGroupService.addProductGroup(dto);\r\n    }\r\n\r\n    @PostMapping(\"/productGroups\")\r\n    public Response getProductList(@RequestBody ProductGroupDto dto) throws BadRequestException {\r\n        return productGroupService.getActiveProductGroupDetails(dto);\r\n    }\r\n\r\n    @GetMapping(value = \"/productGroup/{productId}\")\r\n    public Response getProductDetailsById(@PathVariable Long productId) throws ObjectNotFoundException {\r\n        return productGroupService.getProductGroupDetailsById(productId);\r\n    }\r\n\r\n    @PostMapping(\"/updateProductGroup\")\r\n    public Response updateProduct(@RequestBody ProductGroupDto dto) throws ObjectNotFoundException, BadRequestException {\r\n        return productGroupService.updateProductGroup(dto);\r\n    }\r\n    \r\n//    @PutMapping(\"/delete\")\r\n//    public Response softDeleteProduct(@PathVariable Long productId) throws ObjectNotFoundException, BadRequestException {\r\n//        return productGroupService.softDeleteProductGroup(productId);\r\n//    }\r\n    \r\n    @GetMapping(value = \"/parentGroup\")\r\n    public Response getParentGroup(){\r\n        return productGroupService.getParentGroup();\r\n    }\r\n    \r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ims/src/main/java/com/sas/ims/controller/ProductGroupController.java b/ims/src/main/java/com/sas/ims/controller/ProductGroupController.java
+--- a/ims/src/main/java/com/sas/ims/controller/ProductGroupController.java	(revision 69032cc5cdf8eac66f71a20b8b827bb147d70491)
++++ b/ims/src/main/java/com/sas/ims/controller/ProductGroupController.java	(date 1681815413882)
+@@ -2,6 +2,7 @@
+ 
+ import com.sas.ims.exception.BadRequestException;
+ import com.sas.ims.exception.ObjectNotFoundException;
++import com.sas.tokenlib.response.Response;
+ import org.springframework.beans.factory.annotation.Autowired;
+ import org.springframework.web.bind.annotation.CrossOrigin;
+ import org.springframework.web.bind.annotation.GetMapping;
+@@ -12,7 +13,6 @@
+ import org.springframework.web.bind.annotation.RestController;
+ 
+ import com.sas.ims.dto.ProductGroupDto;
+-import com.sas.ims.response.Response;
+ import com.sas.ims.service.ProductGroupService;
+ 
+ @RestController
+Index: ims/src/main/java/com/sas/ims/repository/OrganisationHierarchyRepository.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.sas.ims.repository;\r\n\r\nimport com.sas.ims.entity.OrganisationHierarchy;\r\nimport org.springframework.data.jpa.repository.JpaRepository;\r\nimport org.springframework.stereotype.Repository;\r\n\r\nimport java.util.List;\r\nimport java.util.Optional;\r\n\r\n@Repository\r\npublic interface OrganisationHierarchyRepository  extends JpaRepository<OrganisationHierarchy,Long> {\r\n\r\n\r\n    Optional<List<OrganisationHierarchy>> findByOrgIdAndHierarchyTypeOrderByHierarchySequenceAsc(Long valueOf, String geo);\r\n\r\n    List<OrganisationHierarchy> findByOrgIdAndHierarchyCodeAndHierarchyTypeAndStatus(Long orgId, String vendor, String geo, boolean b);\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ims/src/main/java/com/sas/ims/repository/OrganisationHierarchyRepository.java b/ims/src/main/java/com/sas/ims/repository/OrganisationHierarchyRepository.java
+--- a/ims/src/main/java/com/sas/ims/repository/OrganisationHierarchyRepository.java	(revision 69032cc5cdf8eac66f71a20b8b827bb147d70491)
++++ b/ims/src/main/java/com/sas/ims/repository/OrganisationHierarchyRepository.java	(date 1681924817567)
+@@ -8,10 +8,8 @@
+ import java.util.Optional;
+ 
+ @Repository
+-public interface OrganisationHierarchyRepository  extends JpaRepository<OrganisationHierarchy,Long> {
+-
+-
++public interface OrganisationHierarchyRepository extends JpaRepository<OrganisationHierarchy, Long> {
+     Optional<List<OrganisationHierarchy>> findByOrgIdAndHierarchyTypeOrderByHierarchySequenceAsc(Long valueOf, String geo);
+ 
+-    List<OrganisationHierarchy> findByOrgIdAndHierarchyCodeAndHierarchyTypeAndStatus(Long orgId, String vendor, String geo, boolean b);
++    Optional<List<OrganisationHierarchy>> findByOrgIdAndHierarchyTypeAndStatusOrderByHierarchySequenceAsc(Long orgId, String hierarchyType, String status);
+ }
+\ No newline at end of file
+Index: ims/src/main/java/com/sas/ims/entity/BranchVendorProductMapping.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ims/src/main/java/com/sas/ims/entity/BranchVendorProductMapping.java b/ims/src/main/java/com/sas/ims/entity/AreaVendorProductMapping.java
+rename from ims/src/main/java/com/sas/ims/entity/BranchVendorProductMapping.java
+rename to ims/src/main/java/com/sas/ims/entity/AreaVendorProductMapping.java
+--- a/ims/src/main/java/com/sas/ims/entity/BranchVendorProductMapping.java	(revision 69032cc5cdf8eac66f71a20b8b827bb147d70491)
++++ b/ims/src/main/java/com/sas/ims/entity/AreaVendorProductMapping.java	(date 1681815936130)
+@@ -10,8 +10,8 @@
+ @Getter
+ @Setter
+ @Entity
+-@Table(name = "BRANCH_VENDOR_PRODUCT_MAPPING")
+-public class BranchVendorProductMapping implements Serializable{
++@Table(name = "AREA_VENDOR_PRODUCT_MAPPING")
++public class AreaVendorProductMapping implements Serializable{
+ 
+ 	private static final long serialVersionUID = -598940486010829682L;
+ 
+@@ -26,8 +26,8 @@
+     @Column(name = "ORG_ID")
+     private Long ORG_ID;
+ 
+-    @Column(name = "BRANCH_ID")
+-    private Long BRANCH_ID;
++    @Column(name = "AREA_ID")
++    private Long AREA_ID;
+ 
+     @Column(name = "VENDOR_ID")
+     private Long VENDOR_ID;
+Index: ims/src/main/java/com/sas/ims/entity/OrganisationHierarchy.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.sas.ims.entity;\r\n\r\nimport lombok.Data;\r\n\r\nimport javax.persistence.*;\r\nimport java.io.Serializable;\r\n\r\n@Entity\r\n@Table(name = \"ORG_HIERARCHY\")\r\n@Data\r\npublic class OrganisationHierarchy extends BaseEntity implements Serializable {\r\n    private static final long serialVersionUID = 8429414798376337020L;\r\n\r\n\r\n    @Id\r\n    @GeneratedValue(strategy = GenerationType.AUTO)\r\n    @Column(name = \"Id\")\r\n    private Long id;\r\n\r\n    @Column(name = \"ORG_ID\")\r\n    private Long orgId;\r\n\r\n    @Column(name = \"HIER_CODE\")\r\n    private String hierarchyCode;\r\n\r\n    @Column(name = \"HIER_NAME\")\r\n    private String hierarchyName;\r\n\r\n    @Column(name = \"HIER_TYPE\")\r\n    private String hierarchyType;\r\n\r\n    @Column(name = \"HIER_SEQUENCE\")\r\n    private Long hierarchySequence;\r\n\r\n    @Column(name = \"STATUS\")\r\n    private boolean status;\r\n\r\n}\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ims/src/main/java/com/sas/ims/entity/OrganisationHierarchy.java b/ims/src/main/java/com/sas/ims/entity/OrganisationHierarchy.java
+--- a/ims/src/main/java/com/sas/ims/entity/OrganisationHierarchy.java	(revision 69032cc5cdf8eac66f71a20b8b827bb147d70491)
++++ b/ims/src/main/java/com/sas/ims/entity/OrganisationHierarchy.java	(date 1681924749869)
+@@ -33,7 +33,7 @@
+     private Long hierarchySequence;
+ 
+     @Column(name = "STATUS")
+-    private boolean status;
++    private String status;
+ 
+ }
+ 
+Index: ims/src/main/java/com/sas/ims/request/ReferenceRequest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ims/src/main/java/com/sas/ims/request/ReferenceRequest.java b/ims/src/main/java/com/sas/ims/request/ReferenceRequest.java
+new file mode 100644
+--- /dev/null	(date 1681801930249)
++++ b/ims/src/main/java/com/sas/ims/request/ReferenceRequest.java	(date 1681801930249)
+@@ -0,0 +1,14 @@
++package com.sas.ims.request;
++
++import lombok.AllArgsConstructor;
++import lombok.Data;
++import lombok.NoArgsConstructor;
++import java.util.List;
++
++@Data
++@AllArgsConstructor
++@NoArgsConstructor
++public class ReferenceRequest {
++
++    private List<ReferenceDetailDto> referenceDetailDto;
++}
+Index: ims/src/main/java/com/sas/ims/request/ReferenceDetailDto.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ims/src/main/java/com/sas/ims/request/ReferenceDetailDto.java b/ims/src/main/java/com/sas/ims/request/ReferenceDetailDto.java
+new file mode 100644
+--- /dev/null	(date 1681802004643)
++++ b/ims/src/main/java/com/sas/ims/request/ReferenceDetailDto.java	(date 1681802004643)
+@@ -0,0 +1,23 @@
++package com.sas.ims.request;
++
++import com.fasterxml.jackson.annotation.JsonInclude;
++import lombok.Getter;
++import lombok.Setter;
++
++@Getter
++@Setter
++@JsonInclude(JsonInclude.Include.NON_NULL)
++public class ReferenceDetailDto {
++    private String referenceDomain;
++    private String keyValue;
++    private String description;
++    private String value1;
++    private String value2;
++    private String value3;
++    private String value4;
++    private Long orgId;
++    private String insertedOn;
++    private String insertedBy;
++    private String updatedOn;
++    private String updatedBy;
++}
+\ No newline at end of file
+Index: ims/src/main/java/com/sas/ims/request/ReferenceDomainRequest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ims/src/main/java/com/sas/ims/request/ReferenceDomainRequest.java b/ims/src/main/java/com/sas/ims/request/ReferenceDomainRequest.java
+new file mode 100644
+--- /dev/null	(date 1681801967084)
++++ b/ims/src/main/java/com/sas/ims/request/ReferenceDomainRequest.java	(date 1681801967084)
+@@ -0,0 +1,13 @@
++package com.sas.ims.request;
++
++import lombok.Getter;
++import lombok.Setter;
++
++import java.util.List;
++
++@Getter
++@Setter
++public class ReferenceDomainRequest {
++
++    private List<String> referenceDomain;
++}
+Index: ims/src/main/java/com/sas/ims/controller/VendorController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.sas.ims.controller;\r\n\r\nimport com.sas.ims.dto.VendorDto;\r\nimport com.sas.ims.exception.BadRequestException;\r\nimport com.sas.ims.request.VendorListRequest;\r\nimport com.sas.ims.response.Response;\r\nimport com.sas.ims.service.VendorService;\r\nimport lombok.extern.slf4j.Slf4j;\r\nimport org.springframework.beans.factory.annotation.Autowired;\r\nimport org.springframework.http.HttpHeaders;\r\nimport org.springframework.web.bind.annotation.*;\r\n\r\nimport javax.servlet.http.HttpServletRequest;\r\nimport javax.servlet.http.HttpServletResponse;\r\nimport java.text.SimpleDateFormat;\r\nimport java.util.Calendar;\r\nimport java.util.SimpleTimeZone;\r\n\r\n@RestController\r\n@RequestMapping(\"/api/vendor\")\r\n@CrossOrigin(\"*\")\r\n@Slf4j\r\npublic class VendorController {\r\n\r\n    @Autowired\r\n    private VendorService vendorService;\r\n\r\n    @GetMapping(\"{vendorId}\")\r\n    public Response getVendorById(@PathVariable Long vendorId) {\r\n        log.info(\"Fetch vendor request for vendorId: {}\", vendorId);\r\n        return vendorService.getVendorById(vendorId);\r\n    }\r\n\r\n    @PostMapping(\"/update\")\r\n    public Response updateVendor(@RequestBody VendorDto vendorDto) throws BadRequestException {\r\n        log.info(\"Initiating vendor update request\");\r\n        return vendorService.updateVendor(vendorDto);\r\n    }\r\n\r\n    @PostMapping(\"/list\")\r\n    public Response getVendorsList(@RequestBody VendorListRequest vendorListRequest) {\r\n        log.info(\"Initiating vendor list fetch request\");\r\n        return vendorService.getVendorList(vendorListRequest.getPage(), vendorListRequest.getSize());\r\n    }\r\n\r\n    @PostMapping(\"/add\")\r\n    public Response addVendor(@RequestBody VendorDto vendorDto) {\r\n        log.info(\"Request received for adding vendor\");\r\n        return vendorService.saveVendor(vendorDto);\r\n    }\r\n\r\n    @PostMapping(\"/remove/{vendorId}\")\r\n    public Response removeVendor(@PathVariable Long vendorId) {\r\n        log.info(\"Request received for adding vendor\");\r\n        return vendorService.removeVendor(vendorId);\r\n    }\r\n\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ims/src/main/java/com/sas/ims/controller/VendorController.java b/ims/src/main/java/com/sas/ims/controller/VendorController.java
+--- a/ims/src/main/java/com/sas/ims/controller/VendorController.java	(revision 69032cc5cdf8eac66f71a20b8b827bb147d70491)
++++ b/ims/src/main/java/com/sas/ims/controller/VendorController.java	(date 1681815413887)
+@@ -3,19 +3,12 @@
+ import com.sas.ims.dto.VendorDto;
+ import com.sas.ims.exception.BadRequestException;
+ import com.sas.ims.request.VendorListRequest;
+-import com.sas.ims.response.Response;
+ import com.sas.ims.service.VendorService;
++import com.sas.tokenlib.response.Response;
+ import lombok.extern.slf4j.Slf4j;
+ import org.springframework.beans.factory.annotation.Autowired;
+-import org.springframework.http.HttpHeaders;
+ import org.springframework.web.bind.annotation.*;
+ 
+-import javax.servlet.http.HttpServletRequest;
+-import javax.servlet.http.HttpServletResponse;
+-import java.text.SimpleDateFormat;
+-import java.util.Calendar;
+-import java.util.SimpleTimeZone;
+-
+ @RestController
+ @RequestMapping("/api/vendor")
+ @CrossOrigin("*")
+Index: ims/src/main/java/com/sas/ims/request/FilterRequest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.sas.ims.request;\r\n\r\nimport lombok.AllArgsConstructor;\r\nimport lombok.Getter;\r\nimport lombok.NoArgsConstructor;\r\nimport lombok.Setter;\r\n\r\nimport java.math.BigDecimal;\r\nimport java.util.List;\r\n\r\n@Getter\r\n@Setter\r\n@NoArgsConstructor\r\n@AllArgsConstructor\r\npublic class FilterRequest {\r\n    private Integer branchId;\r\n    private Long centerId;\r\n    private Long clientId;\r\n    private Long departmentId;\r\n    private Long organizationId;\r\n    private Long applicationId;\r\n    private Integer paymentAttempt;\r\n    private String applicationStatus;\r\n    private String date;\r\n    private int start;\r\n    private int limit;\r\n    private String startDate;\r\n    private String endDate;\r\n    private String genericId;\r\n    private String genericId1;\r\n    private String status;\r\n    private String meetingType;\r\n    private String assignedTo;\r\n    private String centerCode;\r\n    private Long loanId;\r\n    private Long employeeId;\r\n    private String employeeName;\r\n    private Long designationId;\r\n    private String batchId;\r\n    private Integer stateId;\r\n    private Integer purposeId;\r\n    private Integer subPurposeId;\r\n    private String ledgerType;\r\n    private Integer reconNumber;\r\n    private Long disbSeqNo;\r\n    private Integer collSequence;\r\n    private Long meetingId;\r\n    private String reschDate;\r\n    private String reschTime;\r\n    private String reschReason;\r\n    private String reschPermanent;\r\n    private String centerDayFlag;\r\n    private String emplDesigType;\r\n    private Long emplDesigAreaId;\r\n    private String isManager;\r\n    private String isMeetingTransfer;\r\n    private Long basedLocationId;\r\n    private String criteriaId;\r\n    private String funderId;\r\n    private String lenderId;\r\n    private Long disbSeqNum;\r\n    private Integer deathId;\r\n    private String caseProcessStartDate;\r\n    private String caseProcessEndDate;\r\n    private String userId;\r\n    private String name;\r\n    private String isActive;\r\n    private String branchType;\r\n    private String branchCode;\r\n    private Integer pincode;\r\n    private List<Integer> branchList;\r\n    private List<Long> centerList;\r\n    private String type;\r\n    private Integer parentId;\r\n    private Integer villageId;\r\n    private Integer productGroupId;\r\n    private Integer productId;\r\n    private String bcPartnerId;\r\n    private String bankName;\r\n    private String bankCode;\r\n    private String aadharNumber;\r\n    private String votercardNumber;\r\n    private String isCsv;\r\n    private Integer foId;\r\n    private String currentDate;\r\n    private String documentType;\r\n    private String documentName;\r\n    private String bankAccCode;\r\n    private String clientCode;\r\n    private String loanCode;\r\n    private String fromClosureDate;\r\n    private String toClosureDate;\r\n    private String waiverType;\r\n    private String waiverDate;\r\n    private BigDecimal waiverAmount;\r\n    private String waiverRemarks;\r\n    private Long waiverSeqNumber;\r\n    private Integer districtId;\r\n    private String ifscCode;\r\n    private String infoVerifiedStatus;\r\n    private String employeeCode;\r\n    private String loanStatus;\r\n    private String agentId;\r\n    private Integer zoneId;\r\n    private Integer divisionId;\r\n    private String neftStartDate;\r\n    private String neftEndDate;\r\n    private String repaymentOver;\r\n    private String extLanNo;\r\n    private String extLoanId;\r\n    private String isSubCenter;\r\n    private List<String> centerStatus;\r\n    private String insertedBy;\r\n    private String cbPartner;\r\n    private String productGroupType;\r\n    private String bcPartner;\r\n    private Long orgId;\r\n    private String eligibleForClm;\r\n    private String isClmAssingned;\r\n    private String clmStatus;\r\n    private String clientName;\r\n    private String sanctionStatus;\r\n    private Integer circleId;\r\n    private Integer id;\r\n    private String branchBCPartner;\r\n    private String sanctionStartDate;\r\n    private String sanctionEndDate;\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ims/src/main/java/com/sas/ims/request/FilterRequest.java b/ims/src/main/java/com/sas/ims/request/FilterRequest.java
+--- a/ims/src/main/java/com/sas/ims/request/FilterRequest.java	(revision 69032cc5cdf8eac66f71a20b8b827bb147d70491)
++++ b/ims/src/main/java/com/sas/ims/request/FilterRequest.java	(date 1681934725562)
+@@ -13,7 +13,9 @@
+ @NoArgsConstructor
+ @AllArgsConstructor
+ public class FilterRequest {
+-    private Integer branchId;
++    private int page;
++    private int size;
++    private String areaType;
+     private Long centerId;
+     private Long clientId;
+     private Long departmentId;
+Index: ims/src/main/java/com/sas/ims/service/serviceImpl/VendorServiceImpl.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.sas.ims.service.serviceImpl;\r\n\r\nimport com.sas.ims.dto.VendorDto;\r\nimport com.sas.ims.entity.ApprovalDetail;\r\nimport com.sas.ims.entity.ApprovalMatrix;\r\nimport com.sas.ims.entity.OrganisationHierarchy;\r\nimport com.sas.ims.entity.VendorMaster;\r\nimport com.sas.ims.enums.Vendor;\r\nimport com.sas.ims.exception.BadRequestException;\r\nimport com.sas.ims.repository.ApprovalDetailRepository;\r\nimport com.sas.ims.repository.OrganisationHierarchyRepository;\r\nimport com.sas.ims.repository.VendorMasterRepository;\r\nimport com.sas.ims.response.Response;\r\nimport com.sas.ims.service.VendorService;\r\nimport com.sas.ims.utils.DateTimeUtil;\r\nimport com.sas.tokenlib.service.UserCredentialService;\r\nimport com.sas.tokenlib.utils.UserSession;\r\nimport lombok.AllArgsConstructor;\r\nimport lombok.extern.slf4j.Slf4j;\r\nimport org.springframework.data.domain.PageRequest;\r\nimport org.springframework.http.HttpStatus;\r\nimport org.springframework.security.core.userdetails.User;\r\nimport org.springframework.stereotype.Service;\r\nimport org.springframework.util.StringUtils;\r\n\r\nimport java.time.LocalDateTime;\r\nimport java.util.List;\r\nimport java.util.Optional;\r\nimport java.util.stream.Collectors;\r\n\r\n@Service\r\n@AllArgsConstructor\r\n@Slf4j\r\npublic class VendorServiceImpl implements VendorService {\r\n    private final UserCredentialService userCredentialService;\r\n    private final VendorMasterRepository vendorMasterRepository;\r\n    private final OrganisationHierarchyRepository organisationHierarchyRepository;\r\n    private final ApprovalDetailRepository approvalDetailRepository;\r\n\r\n    @Override\r\n    public Response getVendorById(Long vendorId) {\r\n        Optional<VendorMaster> vendorMaster = vendorMasterRepository.findById(vendorId);\r\n        return vendorMaster.map(master -> {\r\n            VendorDto vendorDto = vendorMasterToDto(vendorMaster.get());\r\n            return new Response(\"Transaction Successful\", vendorDto, HttpStatus.OK);\r\n        }).orElseGet(() -> new Response(\"Vendor not found!\", HttpStatus.NOT_FOUND));\r\n    }\r\n\r\n    @Override\r\n    public Response getVendorList(Integer page, Integer size) {\r\n        if (page == null || size == null) {\r\n            return new Response(\"Invalid Request\", HttpStatus.BAD_REQUEST);\r\n        }\r\n        UserSession userSession = userCredentialService.getUserSession();\r\n        List<VendorMaster> vendors = vendorMasterRepository.findByOrgId(userSession.getCompany().getCompanyId(), PageRequest.of(page, size)).getContent();\r\n        List<VendorDto> vendorDtoList = vendors.stream().map(this::vendorMasterToDto).collect(Collectors.toList());\r\n        return new Response(\"Transaction Successful\", vendorDtoList, HttpStatus.OK);\r\n    }\r\n\r\n    @Override\r\n    public Response saveVendor(VendorDto vendorDto) {\r\n        if (!StringUtils.hasText(vendorDto.getVendorName()) ||\r\n                !StringUtils.hasText(vendorDto.getVendorCode()) ||\r\n                !StringUtils.hasText(vendorDto.getAddress1()) ||\r\n                !StringUtils.hasText(String.valueOf(vendorDto.getPincode())) ||\r\n                !StringUtils.hasText(vendorDto.getStateId())) {\r\n            return new Response(\"Invalid Request!\", HttpStatus.BAD_REQUEST);\r\n        }\r\n        UserSession userSession = userCredentialService.getUserSession();\r\n\r\n        //Create vendor master from request\r\n        VendorMaster vendorMaster = vendorDtoToMaster(vendorDto, Vendor.PENDING.getKey(), userSession, false);\r\n\r\n//        ApprovalMatrix approvalMatrix =\r\n\r\n        //Fetch approval matrix from Organisation Hierarchy\r\n//        List<OrganisationHierarchy> organisationHierarchyList = organisationHierarchyRepository.findByOrgIdAndHierarchyCodeAndHierarchyTypeAndStatus(userSession.getCompany().getCompanyId(), \"VENDOR\", \"GEO\", true);\r\n//        if (!organisationHierarchyList.isEmpty()) {\r\n//            organisationHierarchyList.forEach(organisationHierarchy -> {\r\n//                ApprovalDetail approvalDetail = new ApprovalDetail();\r\n//                approvalDetail.setOrgId(userSession.getCompany().getCompanyId());\r\n//                approvalDetail.setEntityId(organisationHierarchy.getId());\r\n//                approvalDetail.setEntityType(organisationHierarchy.getHierarchyType());\r\n//                approvalDetail.setApprovalType(\"VENDOR\");\r\n//                approvalDetail.setApprovalStatus(\"I\");\r\n//                approvalDetailRepository.save(approvalDetail);\r\n//            });\r\n//        }\r\n        vendorMasterRepository.save(vendorMaster);\r\n        return new Response(\"Transaction Successful\", HttpStatus.OK);\r\n    }\r\n\r\n    @Override\r\n    public Response updateVendor(VendorDto vendorDto) throws BadRequestException {\r\n        UserSession userSession = userCredentialService.getUserSession();\r\n        if (!StringUtils.hasText(vendorDto.getVendorName()) ||\r\n                !StringUtils.hasText(vendorDto.getVendorCode()) ||\r\n                !StringUtils.hasText(vendorDto.getAddress1()) ||\r\n                !StringUtils.hasText(String.valueOf(vendorDto.getPincode())) ||\r\n                !StringUtils.hasText(vendorDto.getStateId())) {\r\n            return new Response(\"Invalid Request!\", HttpStatus.BAD_REQUEST);\r\n        }\r\n        try {\r\n            Optional<VendorMaster> vendorMaster = vendorMasterRepository.findById(vendorDto.getVendorId());\r\n            if (vendorMaster.isPresent()) {\r\n                VendorMaster master = vendorDtoToMaster(vendorDto, vendorDto.getVendorStatus(), userSession, true);\r\n                vendorMasterRepository.save(master);\r\n                return new Response(\"Transaction Completed!\", HttpStatus.OK);\r\n            } else {\r\n                throw new BadRequestException(\"No vendor found !\", HttpStatus.BAD_REQUEST);\r\n            }\r\n        } catch (Exception exception) {\r\n            log.info(\"Exception occurred while updating vendor for id: {}\", vendorDto.getVendorId());\r\n            throw new BadRequestException(\"Something went wrong!\", HttpStatus.BAD_REQUEST);\r\n        }\r\n    }\r\n\r\n    @Override\r\n    public Response removeVendor(Long vendorId) {\r\n        UserSession userSession = userCredentialService.getUserSession();\r\n        Optional<VendorMaster> vendorMaster = vendorMasterRepository.findById(vendorId);\r\n        if (vendorMaster.isPresent()) {\r\n            vendorMasterRepository.updateVendorDetails(userSession.getCompany().getCompanyId(), vendorId);\r\n            return new Response(\"Vendor Status has been Updated SUccessfully\", HttpStatus.OK);\r\n        } else {\r\n            return new Response(\"Vendor Doesn't Exists\", HttpStatus.NOT_FOUND);\r\n        }\r\n    }\r\n\r\n    private VendorDto vendorMasterToDto(VendorMaster vendorMaster) {\r\n        VendorDto vendorDto = new VendorDto();\r\n        vendorDto.setOrgId(vendorMaster.getOrgId());\r\n        vendorDto.setVendorCode(vendorMaster.getVendorCode());\r\n        vendorDto.setVendorId(vendorMaster.getVendorId());\r\n        vendorDto.setVendorName(vendorMaster.getVendorName());\r\n        vendorDto.setVendorGroup(vendorMaster.getVendorGroup());\r\n        vendorDto.setVendorType(vendorMaster.getVendorType());\r\n        vendorDto.setAddress1(vendorMaster.getAddress1());\r\n        vendorDto.setAddress2(vendorMaster.getAddress2());\r\n        vendorDto.setAddress3(vendorMaster.getAddress3());\r\n        vendorDto.setPincode(vendorMaster.getPincode());\r\n        vendorDto.setPhone(vendorMaster.getPhone());\r\n        vendorDto.setTelefax(vendorMaster.getTelefax());\r\n        vendorDto.setEmailId(vendorMaster.getEmailId());\r\n        vendorDto.setWebsite(vendorMaster.getWebsite());\r\n        vendorDto.setMobileNumber(vendorMaster.getMobileNumber());\r\n        vendorDto.setBankIfscCode(vendorMaster.getBankIfscCode());\r\n        vendorDto.setBankName(vendorMaster.getBankName());\r\n        vendorDto.setBankMmid(vendorMaster.getBankMmid());\r\n        vendorDto.setBankVpa(vendorMaster.getBankVpa());\r\n        vendorDto.setBankAccount(vendorMaster.getBankAccount());\r\n        vendorDto.setBankBranch(vendorMaster.getBankBranch());\r\n        vendorDto.setTaxpayerNumber(vendorMaster.getTaxpayerNumber());\r\n        vendorDto.setPan(vendorMaster.getPan());\r\n        vendorDto.setSvctaxRegnum(vendorMaster.getSvctaxRegnum());\r\n        vendorDto.setSource(vendorMaster.getSource());\r\n        vendorDto.setGstin(vendorMaster.getGstin());\r\n        vendorDto.setStateId(vendorMaster.getStateId());\r\n        vendorDto.setGstrType(vendorMaster.getGstrType());\r\n        vendorDto.setTypeOfEnterprises(vendorMaster.getTypeOfEnterprises());\r\n        vendorDto.setRegistrationNo(vendorMaster.getRegistrationNo());\r\n        vendorDto.setOneTimeVendor(vendorMaster.getOneTimeVendor());\r\n        vendorDto.setVendorStatus(vendorMaster.getVendorStatus());\r\n        vendorDto.setDocumentPath(vendorMaster.getDocumentPath());\r\n        vendorDto.setRcmFlag(vendorMaster.getRcmFlag());\r\n        vendorDto.setVendorOpeningDate(DateTimeUtil.dateTimeToString(vendorMaster.getVendorOpeningDate(), DateTimeUtil.DDMMYYYY));\r\n        vendorDto.setVendorClosingDate(DateTimeUtil.dateTimeToString(vendorMaster.getVendorClosingDate(), DateTimeUtil.DDMMYYYY));\r\n        return vendorDto;\r\n    }\r\n\r\n    private VendorMaster vendorDtoToMaster(VendorDto vendorDto, String vendorStatus, UserSession userSession, Boolean update) {\r\n        VendorMaster vendorMaster = new VendorMaster();\r\n        if (update) vendorMaster.setVendorId(vendorDto.getVendorId());\r\n        vendorMaster.setOrgId(userSession.getCompany().getCompanyId());\r\n        vendorMaster.setVendorName(vendorDto.getVendorName());\r\n        vendorMaster.setVendorCode(vendorDto.getVendorCode());\r\n        vendorMaster.setVendorGroup(vendorDto.getVendorGroup());\r\n        vendorMaster.setVendorType(vendorDto.getVendorType());\r\n        vendorMaster.setAddress1(vendorDto.getAddress1());\r\n        vendorMaster.setAddress2(vendorDto.getAddress2());\r\n        vendorMaster.setAddress3(vendorDto.getAddress3());\r\n        vendorMaster.setPincode(vendorDto.getPincode());\r\n        vendorMaster.setPhone(vendorDto.getPhone());\r\n        vendorMaster.setTelefax(vendorDto.getTelefax());\r\n        vendorMaster.setEmailId(vendorDto.getEmailId());\r\n        vendorMaster.setWebsite(vendorDto.getWebsite());\r\n        vendorMaster.setMobileNumber(vendorDto.getMobileNumber());\r\n        vendorMaster.setBankIfscCode(vendorDto.getBankIfscCode());\r\n        vendorMaster.setBankName(vendorDto.getBankName());\r\n        vendorMaster.setBankMmid(vendorDto.getBankMmid());\r\n        vendorMaster.setBankVpa(vendorDto.getBankVpa());\r\n        vendorMaster.setBankAccount(vendorDto.getBankAccount());\r\n        vendorMaster.setBankBranch(vendorDto.getBankBranch());\r\n        vendorMaster.setTaxpayerNumber(vendorDto.getTaxpayerNumber());\r\n        vendorMaster.setPan(vendorDto.getPan());\r\n        vendorMaster.setSvctaxRegnum(vendorDto.getSvctaxRegnum());\r\n        vendorMaster.setSource(vendorDto.getSource());\r\n        vendorMaster.setGstin(vendorDto.getGstin());\r\n        vendorMaster.setStateId(vendorDto.getStateId());\r\n        vendorMaster.setGstrType(vendorDto.getGstrType());\r\n        vendorMaster.setTypeOfEnterprises(vendorDto.getTypeOfEnterprises());\r\n        vendorMaster.setRegistrationNo(vendorDto.getRegistrationNo());\r\n        vendorMaster.setOneTimeVendor(vendorDto.getOneTimeVendor());\r\n        vendorMaster.setVendorStatus(vendorStatus);\r\n        vendorMaster.setDocumentPath(vendorDto.getDocumentPath());\r\n        vendorMaster.setRcmFlag(vendorDto.getRcmFlag());\r\n        vendorMaster.setVendorOpeningDate(DateTimeUtil.stringTimeToDateTime(vendorDto.getVendorOpeningDate(), DateTimeUtil.DDMMYYYY));\r\n        vendorMaster.setVendorClosingDate(DateTimeUtil.stringTimeToDateTime(vendorDto.getVendorClosingDate(), DateTimeUtil.DDMMYYYY));\r\n        vendorMaster.setInsertedOn(LocalDateTime.now());\r\n        vendorMaster.setInsertedBy(userSession.getSub());\r\n        return vendorMaster;\r\n    }\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ims/src/main/java/com/sas/ims/service/serviceImpl/VendorServiceImpl.java b/ims/src/main/java/com/sas/ims/service/serviceImpl/VendorServiceImpl.java
+--- a/ims/src/main/java/com/sas/ims/service/serviceImpl/VendorServiceImpl.java	(revision 69032cc5cdf8eac66f71a20b8b827bb147d70491)
++++ b/ims/src/main/java/com/sas/ims/service/serviceImpl/VendorServiceImpl.java	(date 1681815413856)
+@@ -1,25 +1,21 @@
+ package com.sas.ims.service.serviceImpl;
+ 
+ import com.sas.ims.dto.VendorDto;
+-import com.sas.ims.entity.ApprovalDetail;
+-import com.sas.ims.entity.ApprovalMatrix;
+-import com.sas.ims.entity.OrganisationHierarchy;
+ import com.sas.ims.entity.VendorMaster;
+ import com.sas.ims.enums.Vendor;
+ import com.sas.ims.exception.BadRequestException;
+ import com.sas.ims.repository.ApprovalDetailRepository;
+ import com.sas.ims.repository.OrganisationHierarchyRepository;
+ import com.sas.ims.repository.VendorMasterRepository;
+-import com.sas.ims.response.Response;
+ import com.sas.ims.service.VendorService;
+ import com.sas.ims.utils.DateTimeUtil;
++import com.sas.tokenlib.response.Response;
+ import com.sas.tokenlib.service.UserCredentialService;
+ import com.sas.tokenlib.utils.UserSession;
+ import lombok.AllArgsConstructor;
+ import lombok.extern.slf4j.Slf4j;
+ import org.springframework.data.domain.PageRequest;
+ import org.springframework.http.HttpStatus;
+-import org.springframework.security.core.userdetails.User;
+ import org.springframework.stereotype.Service;
+ import org.springframework.util.StringUtils;
+ 
+@@ -63,6 +59,7 @@
+                 !StringUtils.hasText(vendorDto.getVendorCode()) ||
+                 !StringUtils.hasText(vendorDto.getAddress1()) ||
+                 !StringUtils.hasText(String.valueOf(vendorDto.getPincode())) ||
++                !StringUtils.hasText(vendorDto.getPhone()) ||
+                 !StringUtils.hasText(vendorDto.getStateId())) {
+             return new Response("Invalid Request!", HttpStatus.BAD_REQUEST);
+         }
