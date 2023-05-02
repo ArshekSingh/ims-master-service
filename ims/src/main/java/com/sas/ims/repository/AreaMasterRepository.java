@@ -29,4 +29,10 @@ public interface AreaMasterRepository extends JpaRepository<AreaMaster, Long> {
 
     @Query(value = "select nextval('area_master_area_id_seq')", nativeQuery = true)
     Long findLatestSequence();
+
+    @Query(value = "SELECT LPM.AREA_ID, LPM.AREA_NAME, LPM.AREA_CODE FROM AREA_MASTER LPM WHERE LPM.ORG_ID =:companyId AND LPM.STATUS ='A' AND LPM.AREA_TYPE = 'BR'", nativeQuery = true)
+    List<Object[]> findAllAreaDetailByOrgId(Long companyId);
+
+    @Query(value = "SELECT LPM.AREA_ID, LPM.AREA_NAME, LPM.AREA_CODE FROM AREA_MASTER LPM WHERE LPM.ORG_ID =:companyId AND LPM.AREA_ID NOT IN (:areaList) AND LPM.STATUS ='A' AND LPM.AREA_TYPE = 'BR'", nativeQuery = true)
+    List<Object[]> findAllAreasByOrganizationIdNotIn(Long companyId, List<Long> areaList);
 }

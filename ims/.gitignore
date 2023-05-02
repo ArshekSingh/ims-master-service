@@ -22,12 +22,13 @@ dist/
 # Maven
 target/
 dist/
-.run/
+.project
+.classpath
+.settings/
+
 # JetBrains IDE
 .idea/
-.classpath
-.project
-.settings/
+
 # Unit test reports
 TEST*.xml
 
@@ -49,4 +50,4 @@ Thumbs.db
 *.flv
 *.mov
 *.wmv
-/bin/
+
