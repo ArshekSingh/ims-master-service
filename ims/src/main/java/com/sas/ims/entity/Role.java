@@ -1,12 +1,14 @@
 package com.sas.ims.entity;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.*;
 
 @Entity
-@Data
-@Table(name = "role")
+@Getter
+@Setter
+@Table(name = "role_master")
 public class Role {
 
 	@Id
@@ -14,8 +16,8 @@ public class Role {
 	@Column(name = "role_id")
 	private Long id;
 
-	@Column(name = "role", unique = true, nullable = false)
-	private String role;
+	@Column(name = "role_name", unique = true, nullable = false)
+	private String roleName;
 
 	@Column(name = "role_group", nullable = false)
 	private String roleGroup;
