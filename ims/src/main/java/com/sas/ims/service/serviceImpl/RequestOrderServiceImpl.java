@@ -88,7 +88,7 @@ public class RequestOrderServiceImpl implements RequestOrderService, Constant {
             }
             requestOrderDtoList.add(requestOrderDto);
         }
-        return new Response(SUCCESS, requestOrderDtoList, HttpStatus.OK, totalCount);
+        return new Response(SUCCESS, requestOrderDtoList, totalCount, HttpStatus.OK);
     }
 
     @Override

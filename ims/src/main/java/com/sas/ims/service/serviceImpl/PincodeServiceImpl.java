@@ -134,6 +134,6 @@ public class PincodeServiceImpl implements PincodeService, Constant {
             pincodeMasterDto.setCountryId(pincodeMaster.getPincodeMasterPK().getCountryId());
             pincodeMasterDtoList.add(pincodeMasterDto);
         }
-        return new Response(SUCCESS, pincodeMasterDtoList, HttpStatus.OK, count);
+        return new Response(SUCCESS, pincodeMasterDtoList, count, HttpStatus.OK);
     }
 }

@@ -114,7 +114,7 @@ public class SalesOrderServiceImpl implements SalesOrderService, Constant {
                         salesOrderDtoList.add(salesOrderDto);
                     }
                 });
-                return new Response("Transaction completed successfully!", salesOrderDtoList, HttpStatus.OK, totalCount);
+                return new Response("Transaction completed successfully!", salesOrderDtoList, totalCount, HttpStatus.OK);
             } else {
                 return new Response("No records found!", new ArrayList<SalesOrder>(), HttpStatus.OK);
             }
@@ -643,7 +643,7 @@ public class SalesOrderServiceImpl implements SalesOrderService, Constant {
                     }
 
                     log.info("Successfully created sales order item dto");
-                    return new Response("Transaction completed successfully", salesOrderItemDtoList, HttpStatus.OK, totalSalesOrderItemsCount);
+                    return new Response("Transaction completed successfully", salesOrderItemDtoList, totalSalesOrderItemsCount, HttpStatus.OK);
 
                 } else {
                     log.info("Sales order items does not exists for sales orderID: {}", salesOrder.get().getSalesOrderId());
