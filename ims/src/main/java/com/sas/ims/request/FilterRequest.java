@@ -127,4 +127,12 @@ public class FilterRequest {
     private String branchBCPartner;
     private String sanctionStartDate;
     private String sanctionEndDate;
+    private String requestOrderDate;
+    private String salesOrderDate;
+    private String requestOrderId;
+    private String salesOrderId;
+    private String requestOrderStartDate;
+    private String requestOrderEndDate;
+    private String salesOrderStartDate;
+    private String salesOrderEndDate;
 }

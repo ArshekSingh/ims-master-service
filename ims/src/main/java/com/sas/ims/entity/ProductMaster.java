@@ -49,8 +49,8 @@ public class ProductMaster extends BaseEntity {
     @Column(name = "STATUS")
     private String status;
 
-    @Column(name = "PARTNER_REFFERENCE_CODE")
-    private String partnerRefferenceCode;
+    @Column(name = "PARTNER_REFERENCE_CODE")
+    private String partnerReferenceCode;
 
     @Column(name = "PRODUCT_IDENTIFIER_CODE")
     private String productIdentifierCode;
@@ -61,6 +61,9 @@ public class ProductMaster extends BaseEntity {
     @Column(name = "PRODUCT_CLOSING_DATE")
     private LocalDateTime productClosingDate;
 
-   
+    @Column(name = "PARENT_PRODUCT_ID")
+    private Long parentProductId;
 
+    @Column(name = "IS_COMBO")
+    private String isCombo;
 }
