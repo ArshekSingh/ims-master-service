@@ -27,4 +27,8 @@ public interface ProductMasterRepository extends JpaRepository<ProductMaster, Lo
 
     @Query(value = "SELECT LPM.PRODUCT_GROUP_ID FROM PRODUCT_MASTER LPM WHERE LPM.PRODUCT_ID=:productId", nativeQuery = true)
     Long findProductGroupIdByProductId(Long productId);
+
+    Optional<List<ProductMaster>> findByOrgIdAndProductIdIn(Long orgId, List<Long> productIds);
+
+    Optional<List<ProductMaster>> findByOrgIdAndParentProductId(Long orgId, Long parentProductId);
 }
