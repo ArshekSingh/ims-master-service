@@ -1,5 +1,7 @@
 package com.sas.ims.dto;
 
+import com.sas.ims.entity.VendorMaster;
+import com.sas.ims.utils.DateTimeUtil;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -45,4 +47,45 @@ public class VendorDto {
     private String approvalAuthority;
     private String vendorOpeningDate;
     private String vendorClosingDate;
+
+    private VendorDto vendorMasterToDto(VendorMaster vendorMaster) {
+        VendorDto vendorDto = new VendorDto();
+        vendorDto.setOrgId(vendorMaster.getOrgId());
+        vendorDto.setVendorCode(vendorMaster.getVendorCode());
+        vendorDto.setVendorId(vendorMaster.getVendorId());
+        vendorDto.setVendorName(vendorMaster.getVendorName());
+        vendorDto.setVendorGroup(vendorMaster.getVendorGroup());
+        vendorDto.setVendorType(vendorMaster.getVendorType());
+        vendorDto.setAddress1(vendorMaster.getAddress1());
+        vendorDto.setAddress2(vendorMaster.getAddress2());
+        vendorDto.setAddress3(vendorMaster.getAddress3());
+        vendorDto.setPincode(vendorMaster.getPincode());
+        vendorDto.setPhone(vendorMaster.getPhone());
+        vendorDto.setTelefax(vendorMaster.getTelefax());
+        vendorDto.setEmailId(vendorMaster.getEmailId());
+        vendorDto.setWebsite(vendorMaster.getWebsite());
+        vendorDto.setMobileNumber(vendorMaster.getMobileNumber());
+        vendorDto.setBankIfscCode(vendorMaster.getBankIfscCode());
+        vendorDto.setBankName(vendorMaster.getBankName());
+        vendorDto.setBankMmid(vendorMaster.getBankMmid());
+        vendorDto.setBankVpa(vendorMaster.getBankVpa());
+        vendorDto.setBankAccount(vendorMaster.getBankAccount());
+        vendorDto.setBankBranch(vendorMaster.getBankBranch());
+        vendorDto.setTaxpayerNumber(vendorMaster.getTaxpayerNumber());
+        vendorDto.setPan(vendorMaster.getPan());
+        vendorDto.setSvctaxRegnum(vendorMaster.getSvctaxRegnum());
+        vendorDto.setSource(vendorMaster.getSource());
+        vendorDto.setGstin(vendorMaster.getGstin());
+        vendorDto.setStateId(vendorMaster.getStateId());
+        vendorDto.setGstrType(vendorMaster.getGstrType());
+        vendorDto.setTypeOfEnterprises(vendorMaster.getTypeOfEnterprises());
+        vendorDto.setRegistrationNo(vendorMaster.getRegistrationNo());
+        vendorDto.setOneTimeVendor(vendorMaster.getOneTimeVendor());
+        vendorDto.setVendorStatus(vendorMaster.getVendorStatus());
+        vendorDto.setDocumentPath(vendorMaster.getDocumentPath());
+        vendorDto.setRcmFlag(vendorMaster.getRcmFlag());
+        vendorDto.setVendorOpeningDate(DateTimeUtil.dateTimeToString(vendorMaster.getVendorOpeningDate(), DateTimeUtil.DDMMYYYY));
+        vendorDto.setVendorClosingDate(DateTimeUtil.dateTimeToString(vendorMaster.getVendorClosingDate(), DateTimeUtil.DDMMYYYY));
+        return vendorDto;
+    }
 }

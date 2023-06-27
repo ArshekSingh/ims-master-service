@@ -13,6 +13,5 @@ public class ProductGroupAssembler {
         productGroup.setGroupType(dto.getGroupType());
         productGroup.setStatus(dto.getStatus());
         return productGroup;
-
     }
 }
